@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wave Gradient Generator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            width: 100%;
+            height: 100vh;
+            overflow: hidden;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
+        .controls {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            max-width: 300px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .controls h3 {
+            margin: 0 0 15px 0;
+            font-size: 16px;
+            color: #333;
+        }
+
+        .control-group {
+            margin-bottom: 15px;
+        }
+
+        .control-group label {
+            display: block;
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        .control-group input[type="range"] {
+            width: 100%;
+        }
+
+        .control-group input[type="color"] {
+            width: 100%;
+            height: 35px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .control-group .value {
+            font-size: 11px;
+            color: #999;
+            margin-top: 3px;
+        }
+
+        button {
+            width: 100%;
+            padding: 10px;
+            background: #4e4e68;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-top: 10px;
+        }
+
+        button:hover {
+            background: #5a5a74;
+        }
+
+        .preset-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .preset-buttons button {
+            margin: 0;
+            font-size: 12px;
+            padding: 8px;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="gradient-canvas"></canvas>
+    
+    <div class="controls">
+        <h3>🌊 Wave Gradient Settings</h3>
+        
+        <div class="control-group">
+            <label>Wave Amplitude</label>
+            <input type="range" id="amplitude" min="0" max="0.3" step="0.01" value="0.08">
+            <div class="value" id="amplitude-value">0.08</div>
+        </div>
+
+        <div class="control-group">
+            <label>Wave Frequency</label>
+            <input type="range" id="frequency" min="0.5" max="5" step="0.1" value="1.5">
+            <div class="value" id="frequency-value">1.5</div>
+        </div>
+
+        <div class="control-group">
+            <label>Left Zone Width (%)</label>
+            <input type="range" id="leftZone" min="10" max="45" step="1" value="25">
+            <div class="value" id="leftZone-value">25%</div>
+        </div>
+
+        <div class="control-group">
+            <label>Dark Zone Width (%)</label>
+            <input type="range" id="darkZone" min="10" max="80" step="1" value="50">
+            <div class="value" id="darkZone-value">50%</div>
+        </div>
+
+        <div class="control-group">
+            <label>Light Color</label>
+            <input type="color" id="lightColor" value="#e8e4f0">
+        </div>
+
+        <div class="control-group">
+            <label>Dark Color</label>
+            <input type="color" id="darkColor" value="#beb9ce">
+        </div>
+
+        <div class="control-group">
+            <label>Vertical Darken</label>
+            <input type="range" id="verticalDarken" min="0" max="0.5" step="0.01" value="0.1">
+            <div class="value" id="verticalDarken-value">0.1</div>
+        </div>
+
+        <div class="control-group">
+            <label>Wave Direction</label>
+            <select id="direction" style="width: 100%; padding: 8px; border-radius: 5px; border: 1px solid #ddd;">
+                <option value="vertical">Vertical (Top to Bottom)</option>
+                <option value="horizontal">Horizontal (Left to Right)</option>
+            </select>
+        </div>
+
+        <button id="randomize">🎲 Randomize</button>
+        
+        <div class="preset-buttons">
+            <button onclick="waveGradient.applyPreset('default')">Default</button>
+            <button onclick="waveGradient.applyPreset('ocean')">Ocean</button>
+            <button onclick="waveGradient.applyPreset('sunset')">Sunset</button>
+            <button onclick="waveGradient.applyPreset('forest')">Forest</button>
+            <button onclick="waveGradient.applyPreset('dramatic')">Dramatic</button>
+            <button onclick="waveGradient.applyPreset('subtle')">Subtle</button>
+        </div>
+    </div>
+
+    <script>
+        class WaveGradient {
+            constructor(canvasId) {
+                this.canvas = document.getElementById(canvasId);
+                this.ctx = this.canvas.getContext('2d');
+                
+                // Параметри за замовчуванням
+                this.config = {
+                    waveAmplitude: 0.08,
+                    waveFrequency: 1.5,
+                    leftZone: 0.25,
+                    darkZone: 0.50,
+                    lightColor: { r: 232, g: 228, b: 240 },
+                    darkColor: { r: 190, g: 185, b: 206 },
+                    verticalDarken: 0.1,
+                    direction: 'vertical' // 'vertical' or 'horizontal'
+                };
+                
+                this.init();
+            }
+            
+            init() {
+                // Встановлюємо початковий розмір
+                this.canvas.width = window.innerWidth || 800;
+                this.canvas.height = window.innerHeight || 600;
+                
+                // Малюємо після встановлення розміру
+                requestAnimationFrame(() => this.draw());
+                
+                window.addEventListener('resize', () => this.resizeCanvas());
+            }
+            
+            resizeCanvas() {
+                this.canvas.width = window.innerWidth;
+                this.canvas.height = window.innerHeight;
+                requestAnimationFrame(() => this.draw());
+            }
+            
+            // Встановлення параметрів
+            setAmplitude(value) {
+                this.config.waveAmplitude = value;
+                return this;
+            }
+            
+            setFrequency(value) {
+                this.config.waveFrequency = value;
+                return this;
+            }
+            
+            setZones(left, dark) {
+                this.config.leftZone = left;
+                this.config.darkZone = dark;
+                return this;
+            }
+            
+            setLightColor(color) {
+                this.config.lightColor = this.parseColor(color);
+                return this;
+            }
+            
+            setDarkColor(color) {
+                this.config.darkColor = this.parseColor(color);
+                return this;
+            }
+            
+            setVerticalDarken(value) {
+                this.config.verticalDarken = value;
+                return this;
+            }
+            
+            setDirection(direction) {
+                this.config.direction = direction;
+                return this;
+            }
+            
+            // Парсинг кольору з hex в RGB
+            parseColor(hex) {
+                const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+                return result ? {
+                    r: parseInt(result[1], 16),
+                    g: parseInt(result[2], 16),
+                    b: parseInt(result[3], 16)
+                } : { r: 0, g: 0, b: 0 };
+            }
+            
+            // Інтерполяція між двома кольорами
+            interpolateColor(color1, color2, t) {
+                return {
+                    r: Math.round(color1.r + (color2.r - color1.r) * t),
+                    g: Math.round(color1.g + (color2.g - color1.g) * t),
+                    b: Math.round(color1.b + (color2.b - color1.b) * t)
+                };
+            }
+            
+            // Малювання градієнта
+            draw() {
+                const width = this.canvas.width;
+                const height = this.canvas.height;
+                
+                const imageData = this.ctx.createImageData(width, height);
+                const data = imageData.data;
+                
+                const { waveAmplitude, waveFrequency, leftZone, darkZone, 
+                        lightColor, darkColor, verticalDarken, direction } = this.config;
+                
+                // Обчислюємо межі зон
+                const leftZoneEnd = leftZone;
+                const darkZoneEnd = leftZone + darkZone;
+                
+                const isVertical = direction === 'vertical';
+                const primaryDim = isVertical ? height : width;
+                const secondaryDim = isVertical ? width : height;
+                const waveAmp = (isVertical ? width : height) * waveAmplitude;
+                
+                for (let primary = 0; primary < primaryDim; primary++) {
+                    const angle = (primary / primaryDim) * waveFrequency * Math.PI * 2;
+                    const waveOffset = Math.sin(angle) * waveAmp;
+                    
+                    for (let secondary = 0; secondary < secondaryDim; secondary++) {
+                        const adjustedPos = secondary + waveOffset;
+                        let gradientPos = adjustedPos / secondaryDim;
+                        gradientPos = Math.max(0, Math.min(1, gradientPos));
+                        
+                        let color;
+                        
+                        if (gradientPos < leftZoneEnd) {
+                            // Ліва світла зона
+                            const t = gradientPos / leftZoneEnd;
+                            color = this.interpolateColor(lightColor, darkColor, t);
+                        } else if (gradientPos < darkZoneEnd) {
+                            // Темна зона (залишається темною)
+                            color = { ...darkColor };
+                        } else {
+                            // Права світла зона
+                            const t = (gradientPos - darkZoneEnd) / (1 - darkZoneEnd);
+                            color = this.interpolateColor(darkColor, lightColor, t);
+                        }
+                        
+                        // Вертикальне затемнення
+                        const vertPos = isVertical ? primary : secondary;
+                        const vertDim = isVertical ? primaryDim : secondaryDim;
+                        const verticalFactor = 1 - (vertPos / vertDim) * verticalDarken;
+                        
+                        color.r = Math.round(color.r * verticalFactor);
+                        color.g = Math.round(color.g * verticalFactor);
+                        color.b = Math.round(color.b * verticalFactor);
+                        
+                        // Встановлюємо піксель
+                        const x = isVertical ? secondary : primary;
+                        const y = isVertical ? primary : secondary;
+                        const index = (y * width + x) * 4;
+                        
+                        data[index] = color.r;
+                        data[index + 1] = color.g;
+                        data[index + 2] = color.b;
+                        data[index + 3] = 255;
+                    }
+                }
+                
+                this.ctx.putImageData(imageData, 0, 0);
+            }
+            
+            // Пресети
+            applyPreset(presetName) {
+                const presets = {
+                    default: {
+                        waveAmplitude: 0.08,
+                        waveFrequency: 1.5,
+                        leftZone: 0.25,
+                        darkZone: 0.50,
+                        lightColor: '#e8e4f0',
+                        darkColor: '#beb9ce',
+                        verticalDarken: 0.1,
+                        direction: 'vertical'
+                    },
+                    ocean: {
+                        waveAmplitude: 0.12,
+                        waveFrequency: 2.5,
+                        leftZone: 0.20,
+                        darkZone: 0.60,
+                        lightColor: '#e3f2fd',
+                        darkColor: '#0277bd',
+                        verticalDarken: 0.15,
+                        direction: 'vertical'
+                    },
+                    sunset: {
+                        waveAmplitude: 0.10,
+                        waveFrequency: 1.8,
+                        leftZone: 0.30,
+                        darkZone: 0.40,
+                        lightColor: '#fff3e0',
+                        darkColor: '#e65100',
+                        verticalDarken: 0.20,
+                        direction: 'horizontal'
+                    },
+                    forest: {
+                        waveAmplitude: 0.06,
+                        waveFrequency: 2.0,
+                        leftZone: 0.25,
+                        darkZone: 0.50,
+                        lightColor: '#e8f5e9',
+                        darkColor: '#2e7d32',
+                        verticalDarken: 0.12,
+                        direction: 'vertical'
+                    },
+                    dramatic: {
+                        waveAmplitude: 0.20,
+                        waveFrequency: 3.0,
+                        leftZone: 0.15,
+                        darkZone: 0.70,
+                        lightColor: '#f3e5f5',
+                        darkColor: '#4a148c',
+                        verticalDarken: 0.25,
+                        direction: 'vertical'
+                    },
+                    subtle: {
+                        waveAmplitude: 0.03,
+                        waveFrequency: 1.0,
+                        leftZone: 0.30,
+                        darkZone: 0.40,
+                        lightColor: '#fafafa',
+                        darkColor: '#e0e0e0',
+                        verticalDarken: 0.05,
+                        direction: 'vertical'
+                    }
+                };
+                
+                const preset = presets[presetName];
+                if (preset) {
+                    this.config.waveAmplitude = preset.waveAmplitude;
+                    this.config.waveFrequency = preset.waveFrequency;
+                    this.config.leftZone = preset.leftZone;
+                    this.config.darkZone = preset.darkZone;
+                    this.config.lightColor = this.parseColor(preset.lightColor);
+                    this.config.darkColor = this.parseColor(preset.darkColor);
+                    this.config.verticalDarken = preset.verticalDarken;
+                    this.config.direction = preset.direction;
+                    
+                    // Оновлюємо UI
+                    this.updateUI();
+                    this.draw();
+                }
+            }
+            
+            // Оновлення UI контролів
+            updateUI() {
+                document.getElementById('amplitude').value = this.config.waveAmplitude;
+                document.getElementById('amplitude-value').textContent = this.config.waveAmplitude.toFixed(2);
+                
+                document.getElementById('frequency').value = this.config.waveFrequency;
+                document.getElementById('frequency-value').textContent = this.config.waveFrequency.toFixed(1);
+                
+                document.getElementById('leftZone').value = this.config.leftZone * 100;
+                document.getElementById('leftZone-value').textContent = (this.config.leftZone * 100).toFixed(0) + '%';
+                
+                document.getElementById('darkZone').value = this.config.darkZone * 100;
+                document.getElementById('darkZone-value').textContent = (this.config.darkZone * 100).toFixed(0) + '%';
+                
+                document.getElementById('verticalDarken').value = this.config.verticalDarken;
+                document.getElementById('verticalDarken-value').textContent = this.config.verticalDarken.toFixed(2);
+                
+                document.getElementById('direction').value = this.config.direction;
+                
+                const rgbToHex = (r, g, b) => '#' + [r, g, b].map(x => {
+                    const hex = x.toString(16);
+                    return hex.length === 1 ? '0' + hex : hex;
+                }).join('');
+                
+                document.getElementById('lightColor').value = rgbToHex(
+                    this.config.lightColor.r, 
+                    this.config.lightColor.g, 
+                    this.config.lightColor.b
+                );
+                document.getElementById('darkColor').value = rgbToHex(
+                    this.config.darkColor.r, 
+                    this.config.darkColor.g, 
+                    this.config.darkColor.b
+                );
+            }
+            
+            // Рандомізація
+            randomize() {
+                this.config.waveAmplitude = Math.random() * 0.25 + 0.03;
+                this.config.waveFrequency = Math.random() * 4 + 0.5;
+                this.config.leftZone = Math.random() * 0.35 + 0.10;
+                this.config.darkZone = Math.random() * 0.70 + 0.10;
+                this.config.verticalDarken = Math.random() * 0.3;
+                
+                // Рандомні кольори
+                this.config.lightColor = {
+                    r: Math.floor(Math.random() * 100 + 155),
+                    g: Math.floor(Math.random() * 100 + 155),
+                    b: Math.floor(Math.random() * 100 + 155)
+                };
+                this.config.darkColor = {
+                    r: Math.floor(Math.random() * 155),
+                    g: Math.floor(Math.random() * 155),
+                    b: Math.floor(Math.random() * 155)
+                };
+                
+                this.updateUI();
+                this.draw();
+            }
+        }
+        
+        // Створюємо екземпляр
+        const waveGradient = new WaveGradient('gradient-canvas');
+        
+        // Підключаємо контролі
+        document.getElementById('amplitude').addEventListener('input', (e) => {
+            const value = parseFloat(e.target.value);
+            document.getElementById('amplitude-value').textContent = value.toFixed(2);
+            waveGradient.setAmplitude(value).draw();
+        });
+        
+        document.getElementById('frequency').addEventListener('input', (e) => {
+            const value = parseFloat(e.target.value);
+            document.getElementById('frequency-value').textContent = value.toFixed(1);
+            waveGradient.setFrequency(value).draw();
+        });
+        
+        document.getElementById('leftZone').addEventListener('input', (e) => {
+            const value = parseInt(e.target.value) / 100;
+            document.getElementById('leftZone-value').textContent = e.target.value + '%';
+            waveGradient.config.leftZone = value;
+            waveGradient.draw();
+        });
+        
+        document.getElementById('darkZone').addEventListener('input', (e) => {
+            const value = parseInt(e.target.value) / 100;
+            document.getElementById('darkZone-value').textContent = e.target.value + '%';
+            waveGradient.config.darkZone = value;
+            waveGradient.draw();
+        });
+        
+        document.getElementById('lightColor').addEventListener('input', (e) => {
+            waveGradient.setLightColor(e.target.value).draw();
+        });
+        
+        document.getElementById('darkColor').addEventListener('input', (e) => {
+            waveGradient.setDarkColor(e.target.value).draw();
+        });
+        
+        document.getElementById('verticalDarken').addEventListener('input', (e) => {
+            const value = parseFloat(e.target.value);
+            document.getElementById('verticalDarken-value').textContent = value.toFixed(2);
+            waveGradient.setVerticalDarken(value).draw();
+        });
+        
+        document.getElementById('direction').addEventListener('change', (e) => {
+            waveGradient.setDirection(e.target.value).draw();
+        });
+        
+        document.getElementById('randomize').addEventListener('click', () => {
+            waveGradient.randomize();
+        });
+    </script>
+</body>
+</html>

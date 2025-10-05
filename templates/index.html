@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block title %}Emohelp - A safe space to explore your feelings{% endblock %}
+
+{% block content %}
+<main>
+    <div class="hero-content">
+        <h1>A safe space<br>to explore<br>your feelings</h1>
+    </div>
+
+    <div class="right-content">
+        <p class="description">
+            Answear a few questions to discover personalized resources that can help you feel more balanced and grounded.
+        </p>
+        <button class="cta-button">Take quiz</button>
+    </div>
+</main>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.querySelector('.cta-button').addEventListener('click', function() {
+        window.location.href = "{{ url_for('test') }}";
+    });
+</script>
+{% endblock %}
