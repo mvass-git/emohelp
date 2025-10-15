@@ -8,8 +8,8 @@ class WaveGradient {
             waveFrequency: 1.5,
             leftZone: 0.25,
             darkZone: 0.50,
-            lightColor: { r: 240, g: 240, b: 240 },
-            darkColor: { r: 190, g: 185, b: 206 },
+            lightColor: { r: 248, g: 250, b: 242 },
+            darkColor: { r: 185, g: 193, b: 205 },
             verticalDarken: 0.1,
             direction: 'vertical'
         };

@@ -4,7 +4,34 @@
 
 {% block content %}
 <main class="test-page">
-    <h2>Take the Quiz</h2>
-    <p>Quiz content goes here...</p>
+    <h2>{{ test.title }}</h2>
+    <p class="test-description">{{ test.description }}</p>
+
+    <form method="post" action="#">
+        {% for category in test.categories %}
+            <section class="test-category">
+                <h3>{{ category.title }}</h3>
+                <ul class="question-list">
+                    {% for question in category.questions %}
+                        <li class="question-item">
+                            <p>{{ loop.index }}. {{ question.text }}</p>
+                            <div class="answers">
+                                {% set options = test.answer_options if question.scale_type == "frequency" else test.agreement_options %}
+                                {% for option in options %}
+                                    <label>
+                                        <input type="radio"
+                                               name="{{ question.id }}"
+                                               value="{{ option.value }}">
+                                        {{ option.label }}
+                                    </label>
+                                {% endfor %}
+                            </div>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </section>
+        {% endfor %}
+        <button type="submit">Submit</button>
+    </form>
 </main>
 {% endblock %}

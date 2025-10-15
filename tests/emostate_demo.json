@@ -1,0 +1,77 @@
+{
+  "id": "emostate_demo_v2",
+  "title": "Emotional State Screening (Demo)",
+  "description": "Short demo test to identify key emotional indicators.",
+  "answer_scale_type": "frequency",
+  "answer_options": [
+    {"label": "almost never", "value": 1},
+    {"label": "rarely", "value": 2},
+    {"label": "sometimes", "value": 3},
+    {"label": "often", "value": 4},
+    {"label": "almost always", "value": 5}
+  ],
+  "agreement_options": [
+    {"label": "strongly disagree", "value": 1},
+    {"label": "disagree", "value": 2},
+    {"label": "neutral", "value": 3},
+    {"label": "agree", "value": 4},
+    {"label": "strongly agree", "value": 5}
+],
+  "categories": [
+    {
+      "id": "loneliness",
+      "title": "Loneliness",
+      "weight": 1.0,
+      "questions": [
+        {"id": "lon_1", "text": "How often do you feel part of a group of friends?", "reverse": false, "scale_type": "frequency"},
+        {"id": "lon_2", "text": "How often do you feel that there are people who really understand you?", "reverse": false, "scale_type": "frequency"},
+        {"id": "lon_3", "text": "How often do you feel that no one really knows you well?", "reverse": true, "scale_type": "frequency"},
+        {"id": "lon_4", "text": "How often do you feel that people are around you but not with you?", "reverse": true, "scale_type": "frequency"}
+      ]
+    },
+    {
+      "id": "existential",
+      "title": "Existential Anxiety",
+      "weight": 1.0,
+      "questions": [
+        {"id": "ex_1", "text": "I try to push away the thought that life will end.", "reverse": false, "scale_type": "agreement"},
+        {"id": "ex_2", "text": "It frightens me when I realize how many choices life offers.", "reverse": false, "scale_type": "agreement"},
+        {"id": "ex_3", "text": "I am afraid that I will never know myself at the deepest level.", "reverse": false, "scale_type": "agreement"},
+        {"id": "ex_4", "text": "When the question of whether life has meaning enters my mind, I try to think quickly about something else.", "reverse": false, "scale_type": "agreement"}
+      ]
+    },
+    {
+      "id": "depressive",
+      "title": "Depressive Symptoms",
+      "weight": 1.0,
+      "questions": [
+        {"id": "dep_1", "text": "I felt that everything I did was an effort.", "reverse": false, "scale_type": "agreement"},
+        {"id": "dep_2", "text": "I felt hopeful about the future.", "reverse": true, "scale_type": "agreement"},
+        {"id": "dep_3", "text": "I had trouble keeping my mind on what I was doing.", "reverse": false, "scale_type": "agreement"},
+        {"id": "dep_4", "text": "I felt that I could not shake off the blues even with help from my family or friends.", "reverse": false, "scale_type": "agreement"}
+      ]
+    },
+    {
+      "id": "social_connectedness",
+      "title": "Social Connectedness",
+      "weight": 1.0,
+      "questions": [
+        {"id": "soc_1", "text": "I feel like an outsider.", "reverse": true, "scale_type": "agreement"},
+        {"id": "soc_2", "text": "I am able to relate to my peers.", "reverse": false, "scale_type": "agreement"},
+        {"id": "soc_3", "text": "I catch myself losing a sense of connectedness with my society.", "reverse": true, "scale_type": "agreement"},
+        {"id": "soc_4", "text": "I am in tune with the world.", "reverse": false, "scale_type": "agreement"}
+      ]
+    },
+    {
+      "id": "motivation",
+      "title": "Motivation",
+      "weight": 1.0,
+      "questions": [
+        {"id": "mot_1", "text": "I kept trying to think of ways to solve a problem but never tried any of the solutions.", "reverse": false, "scale_type": "agreement"},
+        {"id": "mot_2", "text": "I took time off responsibilities simply because I was too tired or didn’t feel like going in.", "reverse": false, "scale_type": "agreement"},
+        {"id": "mot_3", "text": "I structured my day’s activities.", "reverse": true, "scale_type": "agreement"},
+        {"id": "mot_4", "text": "I engaged in a wide and diverse array of activities.", "reverse": true, "scale_type": "agreement"}
+      ]
+    }
+  ]
+}

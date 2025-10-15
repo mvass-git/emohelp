@@ -1,0 +1,214 @@
+{% extends "base.html" %}
+{% block title %}Test Results - Emotional State Screening{% endblock %}
+
+{% block content %}
+<div class="test-results">
+    <h2>Your Test Results</h2>
+    
+    <!-- Overall Summary -->
+    <section class="results-summary">
+        <h3>Summary</h3>
+        <div class="summary-card">
+            <p><strong>Total States Identified:</strong> {{ state_summary.total_count }}</p>
+            <p><strong>Severity Distribution:</strong></p>
+            <ul class="severity-list">
+                {% for severity, count in state_summary.severity_distribution.items() %}
+                    <li>
+                        <span class="severity-badge severity-{{ severity }}">
+                            Level {{ severity }}
+                        </span>
+                        : {{ count }} state(s)
+                    </li>
+                {% endfor %}
+            </ul>
+            {% if state_summary.requires_attention %}
+                <div class="alert alert-info">
+                    <strong>Note:</strong> Some areas may benefit from additional support and resources.
+                </div>
+            {% endif %}
+        </div>
+    </section>
+
+    <!-- Category Scores -->
+    <section class="category-scores">
+        <h3>Category Scores</h3>
+        <div class="scores-grid">
+            {% for cat_id, score_data in category_scores.items() %}
+                <div class="score-card">
+                    <h4>{{ cat_id|replace('_', ' ')|title }}</h4>
+                    <div class="score-display">
+                        <span class="score-value">{{ score_data.total }}</span>
+                        <span class="score-max">/20</span>
+                    </div>
+                    <div class="score-bar">
+                        <div class="score-fill"></div>
+                    </div>
+                    <p class="score-average">Average: {{ "%.2f"|format(score_data.average) }}/5</p>
+                </div>
+            {% endfor %}
+        </div>
+    </section>
+
+    <!-- Identified Emotional States -->
+    <section class="emotional-states">
+        <h3>Identified Emotional States</h3>
+        <div class="states-list">
+            {% for state_info in state_summary.states %}
+                <div class="state-card severity-{{ state_info.severity }}">
+                    <div class="state-header">
+                        <h4>{{ state_info.name }}</h4>
+                        <span class="state-level level-{{ state_info.level }}">
+                            {{ state_info.level|title }}
+                        </span>
+                    </div>
+                    <p class="state-description">{{ state_info.description }}</p>
+                    <p class="state-meta">
+                        <small>Category: {{ state_info.category|replace('_', ' ')|title }}</small> |
+                        <small>Score Range: {{ state_info.score_range }}</small>
+                    </p>
+                </div>
+            {% endfor %}
+        </div>
+    </section>
+
+    <!-- Related States -->
+    {% if related_states %}
+    <section class="related-states">
+        <h3>Related Areas to Consider</h3>
+        <p class="section-description">
+            Based on your results, these related emotional states may also be relevant:
+        </p>
+        <div class="related-list">
+            {% for rel_state in related_states %}
+                <div class="related-card">
+                    <h4>{{ rel_state.name }}</h4>
+                    <p>{{ rel_state.description }}</p>
+                    <div class="related-meta">
+                        <span class="correlation">
+                            Correlation: {{ "%.0f"|format(rel_state.correlation * 100) }}%
+                        </span>
+                        <span class="relationship-type">
+                            {{ rel_state.relationship_type|title }}
+                        </span>
+                    </div>
+                    <p class="related-to">
+                        <small>Related to: {{ rel_state.related_to|join(', ') }}</small>
+                    </p>
+                </div>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+
+    <!-- Recommendations -->
+    <section class="recommendations">
+        <h3>Recommended Resources</h3>
+        <p class="section-description">
+            Based on your emotional state profile, we recommend the following resources for self-help and well-being:
+        </p>
+        
+        {% if recommendations %}
+        <div class="resources-list">
+            {% for resource in recommendations %}
+                <div class="resource-card">
+                    <div class="resource-header">
+                        <div class="resource-title-section">
+                            <h4>{{ resource.title }}</h4>
+                            {% if resource.author %}
+                                <p class="resource-author">by {{ resource.author }}</p>
+                            {% endif %}
+                        </div>
+                        <div class="resource-badges">
+                            <span class="resource-type-badge">{{ resource.resource_type }}</span>
+                            {% if resource.rating %}
+                                <span class="rating-badge">
+                                    ⭐ {{ "%.1f"|format(resource.rating) }}
+                                </span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <p class="resource-description">{{ resource.description }}</p>
+                    
+                    <div class="resource-meta">
+                        {% if resource.duration_minutes %}
+                            <span class="meta-item">
+                                ⏱️ {{ resource.duration_minutes }} min
+                            </span>
+                        {% endif %}
+                        {% if resource.language %}
+                            <span class="meta-item">
+                                🌐 {{ resource.language|upper }}
+                            </span>
+                        {% endif %}
+                    </div>
+                    
+                    {% if resource.addressed_states %}
+                    <div class="resource-helps">
+                        <strong>Helps with:</strong>
+                        <div class="helps-tags">
+                            {% for state in resource.addressed_states %}
+                                <span class="help-tag">{{ state }}</span>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    {% if resource.themes %}
+                    <div class="resource-themes">
+                        <strong>Themes:</strong>
+                        <div class="theme-tags">
+                            {% for theme in resource.themes %}
+                                <span class="theme-tag">{{ theme }}</span>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="resource-relevance">
+                        <div class="relevance-bar">
+                            <div class="relevance-fill">
+                            </div>
+                        </div>
+                        <small class="relevance-text">
+                            Relevance: {{ "%.0f"|format(resource.relevance_score) }} | 
+                            Effectiveness: {{ "%.0f"|format(resource.avg_effectiveness * 100) }}%
+                        </small>
+                    </div>
+                    
+                    <div class="resource-actions">
+                        <a href="{{ resource.url }}" 
+                           class="btn btn-primary" 
+                           target="_blank" 
+                           rel="noopener noreferrer">
+                            View Resource →
+                        </a>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="no-recommendations">
+            <p>No specific recommendations available at this time. Your results indicate a generally healthy emotional state.</p>
+        </div>
+        {% endif %}
+    </section>
+
+    <!-- Actions -->
+    <section class="result-actions">
+        <a href="{{ url_for('test') }}" class="btn btn-secondary">Take Test Again</a>
+        <button onclick="window.print()" class="btn btn-secondary">Print Results</button>
+    </section>
+
+    <!-- Disclaimer -->
+    <section class="disclaimer">
+        <h4>Important Note</h4>
+        <p>
+            This screening tool is designed for self-awareness and educational purposes only. 
+            It is not a substitute for professional mental health assessment or treatment. 
+            If you're experiencing significant distress or mental health concerns, please 
+            consult with a qualified mental health professional.
+        </p>
+    </section>
+</div>
+{% endblock %}

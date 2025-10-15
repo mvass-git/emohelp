@@ -26,12 +26,13 @@ header {
     align-items: center;
     padding: 1.25rem 2.5rem;
     background: transparent;
+    height: 10vh;
 }
 
 .logo {
     font-size: 3rem;
     font-weight: 700;
-    color: #3a3a4a;
+    color: #8a93a8;
 }
 
 .nav-container {
@@ -41,7 +42,7 @@ header {
 }
 
 nav {
-    padding-right: 30vw;
+    padding-right: 25vw;
 }
 
 nav a {
@@ -89,23 +90,33 @@ nav a:hover {
 main {
     flex: 1;
     display: flex;
+    flex-direction: column;
     justify-content: space-between;
     align-items: center;
-    height: calc(100vh - 15vh); /* трохи менше відступу знизу */
+    height: calc(100vh - 10vh);
     width: 100vw;
+}
+
+.main-content{
+    flex:1;
+    display: flex;
+    flex-direction: row;
+    padding-top: 5rem;
+    max-height: 50vh;
 }
 
 .hero-content {
     width: 55vw;
-    padding-left: 8vw;
-    padding-right: 2rem;
+    padding-left: 4vw;
+    padding-right: 4rem;
+    display: flex;
 }
 
 .hero-content h1 {
     /* адаптивне масштабування: росте швидше після ~1600px ширини */
-    font-size: clamp(3rem, 7vw + 0.5rem, 9rem);
+    font-size: clamp(3rem, 6vw + 0.8rem, 9rem);
     font-weight: 700;
-    color: #3a3a4a;
+    color: #35251C;
     line-height: 1.05;
 }
 
@@ -113,22 +124,31 @@ main {
     display: flex;
     flex-direction: column;
     justify-content: center;
+    align-items: center;
     width: 45vw;
-    padding-top: 8vh;
     padding-right: 8vw;
 }
 
 .description {
-    /* трохи агресивніше масштабування */
-    font-size: clamp(1.1rem, 2.5vw + 0.5rem, 2.5rem);
-    color: #4a4a5a;
+    font-size: clamp(1.5rem, 2vw, 2.5rem);
+    color: #35251C;
     line-height: 1.5;
-    margin-bottom: 2rem;
-    max-height: 25vh;
+    padding-top: 15%;
+    margin-bottom: 5rem;
+    max-height: 20vh;
+}
+
+.decoarrow{
+    display: flex;  
+}
+
+.decoarrow img{
+    width: 45vw;
+    padding-bottom: 3.5rem;
 }
 
 .cta-button {
-    background: #4e4e68;
+    background: #3a405a;
     color: white;
     border: none;
     padding: 1rem 2rem;
