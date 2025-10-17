@@ -211,4 +211,166 @@
         </p>
     </section>
 </div>
+
+<style>
+    /* === Test Results Page Styles === */
+.test-results {
+  max-width: 900px;
+  margin: 3rem auto;
+  padding: 2rem;
+  color: #35251C;
+  font-family: 'Inter', sans-serif;
+}
+
+.test-results h2, 
+.test-results h3, 
+.test-results h4 {
+  color: #35251C;
+  font-weight: 700;
+  margin-bottom: 1rem;
+}
+
+.results-summary, 
+.category-scores, 
+.emotional-states, 
+.related-states, 
+.recommendations, 
+.disclaimer {
+  margin-bottom: 3rem;
+}
+
+.summary-card, 
+.score-card, 
+.state-card, 
+.related-card, 
+.resource-card {
+  background: #f9f9fb;
+  border-radius: 1.5rem;
+  box-shadow: 0 4px 12px rgba(58, 64, 90, 0.15);
+  padding: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.scores-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
+}
+
+/* === Score Cards === */
+.score-display {
+  font-size: 1.8rem;
+  font-weight: 700;
+}
+.score-bar {
+  height: 8px;
+  border-radius: 8px;
+  background: #ddd;
+  margin: 0.5rem 0 1rem;
+  overflow: hidden;
+}
+.score-fill {
+  width: calc(var(--score, 0) * 1%);
+  height: 100%;
+  background: #3a405a;
+  transition: width 0.6s ease;
+}
+.score-average {
+  font-size: 0.9rem;
+  color: #555;
+}
+
+/* === Emotional States === */
+.state-card .state-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.state-level {
+  background: #3a405a;
+  color: white;
+  border-radius: 12px;
+  padding: 0.2rem 0.6rem;
+  font-size: 0.85rem;
+}
+
+/* === Recommendations === */
+.resource-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+.resource-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+.resource-type-badge {
+  background: #3a405a;
+  color: white;
+  padding: 0.3rem 0.8rem;
+  border-radius: 9999px;
+  font-size: 0.85rem;
+}
+.rating-badge {
+  background: #ffcc00;
+  color: #35251C;
+  padding: 0.3rem 0.8rem;
+  border-radius: 9999px;
+  font-size: 0.85rem;
+}
+.theme-tags, .helps-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+}
+.theme-tag, .help-tag {
+  background: #3a405a;
+  color: #fff;
+  padding: 0.2rem 0.6rem;
+  border-radius: 8px;
+  font-size: 0.8rem;
+}
+
+/* === Buttons === */
+.btn {
+  background-color: #3a405a;
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  padding: 0.6rem 1.4rem;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background 0.2s ease;
+}
+.btn:hover {
+  background-color: #2e334a;
+}
+
+/* === Misc === */
+.alert-info {
+  background: #e5e7f2;
+  border-left: 4px solid #3a405a;
+  padding: 1rem;
+  border-radius: 8px;
+  margin-top: 1rem;
+}
+
+.disclaimer {
+  font-size: 0.9rem;
+  background: #f5f5f7;
+  padding: 1.5rem;
+  border-radius: 12px;
+  color: #3a405a;
+}
+
+.score-card, .state-card, .resource-card {
+    animation: fadeInUp 1s ease both;
+}
+@keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(15px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+</style>
 {% endblock %}

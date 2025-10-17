@@ -1,0 +1,41 @@
+<input type="hidden" name="question_id" value="{{ question.id }}">
+<!-- Прогрес -->
+<div class="test-progress">
+    <span class="progress-text">{{ current_question }}/{{ total_questions }}</span>
+</div>
+
+<!-- Питання -->
+<div class="question-container">
+    <h2 class="question-text">{{ question.text }}</h2>
+</div>
+
+<!-- Відповіді -->
+<div class="answer-scale">
+    {% set options = test.answer_options if question.scale_type == "frequency" else test.agreement_options %}
+    {% for option in options %}
+    <label class="scale-option">
+        <input type="radio" 
+               name="answer" 
+               value="{{ option.value }}"
+               id="option-{{ loop.index }}"
+               {% if saved_answer is not none and saved_answer == option.value %}checked{% elif saved_answer is none and loop.index == 3 %}checked{% endif %}>
+        <span class="scale-circle"></span>
+        <span class="scale-label">{{ option.label }}</span>
+    </label>
+    {% endfor %}
+</div>
+
+<!-- Кнопки навігації -->
+<div class="test-navigation">
+    {% if current_index > 0 %}
+    <button type="button" class="btn btn-back" id="btnBack">‹ Back</button>
+    {% else %}<div></div>{% endif %}
+
+    {% if current_index < total_questions - 1 %}
+    <button type="submit" name="action" value="next" class="btn btn-next">Next ›</button>
+    {% else %}
+    <button type="submit" name="action" value="submit" class="btn btn-submit">Submit</button>
+    {% endif %}
+
+    <button type="button" class="btn btn-skip" id="btnSkip">Skip</button>
+</div>

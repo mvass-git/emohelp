@@ -1,7 +1,25 @@
+@import url('https://fonts.googleapis.com/css2?family=Rowdies:wght@300;400;700&family=Palanquin:wght@300;400;500;600;700&family=Manrope:wght@300;400;500;600;700&display=swap');
+
+
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
+}
+
+html{
+    background-color: #B2BAC5;
+}
+
+#gradient-canvas {
+    background-color: #B2BAC5;
+    opacity: 0;
+    transition: opacity 0.6s ease-in-out;
+}
+
+
+h1, h2, h3 {
+  font-family: 'Palanquin';
 }
 
 body {
@@ -31,8 +49,10 @@ header {
 
 .logo {
     font-size: 3rem;
-    font-weight: 700;
-    color: #8a93a8;
+    font-weight: 400;
+    color: #3A405A;
+    font-family: "Rowdies";
+    padding-left: 3.5rem;
 }
 
 .nav-container {
@@ -52,6 +72,8 @@ nav a {
     font-weight: 500;
     transition: opacity 0.2s ease, transform 0.2s ease;
     padding: clamp(0.5rem, 1vw, 1rem) clamp(0.8rem, 1.5vw, 2rem);
+    font-family: "Manrope";
+
 }
 
 nav a:hover {
@@ -90,9 +112,8 @@ nav a:hover {
 main {
     flex: 1;
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     justify-content: space-between;
-    align-items: center;
     height: calc(100vh - 10vh);
     width: 100vw;
 }
@@ -100,14 +121,14 @@ main {
 .main-content{
     flex:1;
     display: flex;
-    flex-direction: row;
+    flex-direction: column;
     padding-top: 5rem;
     max-height: 50vh;
 }
 
 .hero-content {
-    width: 55vw;
-    padding-left: 4vw;
+    width: 100%;
+    padding-left: 2vw;
     padding-right: 4rem;
     display: flex;
 }
@@ -115,6 +136,7 @@ main {
 .hero-content h1 {
     /* адаптивне масштабування: росте швидше після ~1600px ширини */
     font-size: clamp(3rem, 6vw + 0.8rem, 9rem);
+    width: 80%;
     font-weight: 700;
     color: #35251C;
     line-height: 1.05;
@@ -127,6 +149,8 @@ main {
     align-items: center;
     width: 45vw;
     padding-right: 8vw;
+    padding-left: 3rem;
+    font-family: "Manrope";
 }
 
 .description {
@@ -134,17 +158,20 @@ main {
     color: #35251C;
     line-height: 1.5;
     padding-top: 15%;
-    margin-bottom: 5rem;
+    margin-bottom: 7rem;
     max-height: 20vh;
 }
 
-.decoarrow{
-    display: flex;  
+.char{
+    position: absolute;
+    aspect-ratio: 1307/1080;
+    width: 55vw;
+    left:55%;
+    top:30%;
 }
-
-.decoarrow img{
-    width: 45vw;
-    padding-bottom: 3.5rem;
+.char img{
+    width:100%;
+    height: 100%;
 }
 
 .cta-button {
@@ -152,6 +179,7 @@ main {
     color: white;
     border: none;
     padding: 1rem 2rem;
+    font-family: "Manrope";
     font-size: clamp(1.25rem, 1.8vw + 0.5rem, 2.5rem);
     font-weight: 500;
     border-radius: 12px;
@@ -227,7 +255,23 @@ main {
     }
 
     nav a {
-        white-space: nowrap;        /* не переносити текст */
+        white-space: nowrap;
         font-size: 1.2rem;
+    }
+
+    .char {
+    position: relative; /* або залишити absolute, якщо потрібен перекриття інших елементів */
+    width: 80%;         /* зменшено для мобільних */
+    max-width: 300px;   /* обмеження максимальної ширини */
+    left: 50%;          /* центр по горизонталі */
+    top: 0;             /* верхня частина сторінки */
+    transform: translateX(-50%); /* центрування */
+    aspect-ratio: auto; /* автоматичне збереження пропорцій */
+    margin-bottom: 2rem; /* відступ знизу, щоб не перекривало текст */
+    }
+
+    .char img {
+        width: 100%;
+        height: auto; /* зберігає пропорції */
     }
 }
