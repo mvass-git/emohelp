@@ -73,7 +73,7 @@ def about():
 
 @app.route('/signin')
 def signin():
-    return render_template('signin.html')
+    return render_template('sign_in.html')
 
 def find_static_and_templates():
     extra_dirs = ['templates', 'static']
