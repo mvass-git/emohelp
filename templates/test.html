@@ -4,34 +4,282 @@
 
 {% block content %}
 <main class="test-page">
-    <h2>{{ test.title }}</h2>
-    <p class="test-description">{{ test.description }}</p>
-
-    <form method="post" action="#">
-        {% for category in test.categories %}
-            <section class="test-category">
-                <h3>{{ category.title }}</h3>
-                <ul class="question-list">
-                    {% for question in category.questions %}
-                        <li class="question-item">
-                            <p>{{ loop.index }}. {{ question.text }}</p>
-                            <div class="answers">
-                                {% set options = test.answer_options if question.scale_type == "frequency" else test.agreement_options %}
-                                {% for option in options %}
-                                    <label>
-                                        <input type="radio"
-                                               name="{{ question.id }}"
-                                               value="{{ option.value }}">
-                                        {{ option.label }}
-                                    </label>
-                                {% endfor %}
-                            </div>
-                        </li>
-                    {% endfor %}
-                </ul>
-            </section>
-        {% endfor %}
-        <button type="submit">Submit</button>
-    </form>
+    <div class="test-container" id="testContainer">
+        <form method="post">
+            {% include "partials/question_block.html" %}
+        </form>
+    </div>
 </main>
+
+<style>
+.test-page {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    max-height: calc(100vh - 80px);
+    padding: 20px;
+}
+
+
+.test-container {
+    width: 100%;
+    max-width: 1000px;
+    text-align: center;
+    padding-bottom: 8%;
+}
+
+/* Progress */
+.test-progress {
+    margin-bottom: 20px;
+}
+
+.progress-text {
+    font-size: clamp(1.5rem, 3vw, 12rem);
+    font-family: "Palanquin";
+    font-weight: 800;
+    color: #35251C;
+}
+
+/* Question */
+.question-container {
+    margin-bottom: 60px;
+    align-items: center;
+}
+
+.question-text {
+    font-size: clamp(1.5rem, 2vw, 9rem);
+    font-weight: 500;
+    font-family: "Manrope";
+    color: #35251C;
+    line-height: 1.2;
+    margin: 0;
+}
+
+/* Answer Scale */
+.answer-scale {
+    display:inline-flex;
+    justify-content: space-between;
+    margin: 0 auto 60px;
+    max-width: 80vw;
+    position: relative;
+}
+
+/* Connecting line */
+.answer-scale::before {
+    content: '';
+    position: absolute;
+    height: 7px;
+    width:calc(clamp(40px, 10rem, 100px)*5 + 4*2rem+1vw);
+    left:clamp(40px, 10rem, 100px);
+    right:clamp(40px, 10rem, 100px);
+    top:calc(clamp(40px, 10rem, 100px) - clamp(40px, 10rem, 100px)/4);
+    background: #3a405a;
+    z-index: 0;
+}
+
+.scale-option {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    cursor: pointer;
+    position: relative;
+    z-index: 1;
+    flex: 1;
+    padding: 2rem;
+}
+
+.scale-option input[type="radio"] {
+    position: absolute;
+    background: #B0B7C3;
+    opacity: 0;
+}
+
+.scale-circle {
+    width: clamp(40px, 10rem, 100px);
+    height: clamp(40px, 10rem, 100px);
+    border-radius: 50%;
+    background: #B0B7C3;
+    border: 8px solid #3a405a;
+    transition: all 0.3s ease;
+    margin-bottom: 15px;
+    position: relative;
+}
+
+.scale-option:hover .scale-circle {
+    border-color: #3a405a;
+    transform: scale(1.1);
+}
+
+
+.scale-option input[type="radio"]:checked ~ .scale-circle {
+    border-color: #3a405a;
+    background: #B0B7C3;
+    box-shadow: 0 0 0 4px rgba(52, 152, 219, 0.2);
+}
+
+.scale-option input[type="radio"]:checked ~ .scale-circle::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: calc(clamp(40px, 10rem, 100px)*0.75);
+    height: calc(clamp(40px, 10rem, 100px)*0.75);
+    border-radius: 90%;
+    background: #3a405a;
+}
+
+.scale-label {
+    font-size: clamp(1.1rem, 1vw, 5rem);
+    font-family: "Manrope";
+    color: #35251C;
+    text-align: center;
+    max-width: calc(clamp(40px, 10rem, 100px)*1.5);
+    line-height: 1.3;
+    transition: color 0.3s ease;
+}
+
+.scale-option input[type="radio"]:checked ~ .scale-label {
+    color: rgb(37, 52, 67);
+    font-weight: 600;
+}
+
+/* Navigation */
+.test-navigation {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 15px;
+    margin-top: 40px;
+}
+
+.btn {
+    padding: 12px 30px;
+    border: none;
+    border-radius: 8px;
+    font-size: 1.8rem;
+    font-weight: 600;
+    font-family: "Manrope";
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-back {
+    background: transparent;
+    color: #35251C;
+    border: 2px solid #bdc3c7;
+    font-weight: 400;
+}
+
+.btn-back:hover {
+    background: #ecf0f1;
+    border-color: #95a5a6;
+}
+
+.btn-next,
+.btn-submit {
+    background: #3a405a;
+    color: white;
+    padding: 12px 40px;
+}
+
+.btn-next:hover,
+.btn-submit:hover {
+    background: #2980b9;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
+}
+
+.btn-skip {
+    background: transparent;
+    color: #35251C;
+    border: none;
+    font-weight: 400;
+    padding: 12px 20px;
+}
+
+.btn-skip:hover {
+    color: rgb(37, 52, 67);
+    text-decoration: underline;
+}
+
+.char_think{
+    position: absolute;
+    left:0%;
+    top: 35%;
+    width:30vw;
+    height: auto;
+}
+
+.char_think img {
+    width: 100%;
+    height: 100%;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .question-text {
+        font-size: 1.4rem;
+    }
+
+    .answer-scale {
+        flex-wrap: nowrap;
+        max-width: 100%;
+        padding: 0 10px;
+    }
+
+    .scale-circle {
+        width: 32px;
+        height: 32px;
+    }
+
+    .scale-label {
+        font-size: 0.75rem;
+        max-width: 60px;
+    }
+
+    .answer-scale::before {
+        left: 30px;
+        right: 30px;
+    }
+
+    .test-navigation {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .btn {
+        width: 100%;
+        max-width: 300px;
+    }
+}
+
+@media (max-width: 480px) {
+    .progress-text {
+        font-size: 1.2rem;
+    }
+
+    .question-text {
+        font-size: 1.2rem;
+    }
+
+    .scale-circle {
+        width: 28px;
+        height: 28px;
+    }
+
+    .scale-label {
+        font-size: 0.7rem;
+        max-width: 50px;
+    }
+
+    .answer-scale::before {
+        left: 20px;
+        right: 20px;
+        top: 14px;
+    }
+}
+</style>
+
+<script src="{{ url_for('static', filename='js/test_form.js') }}"></script>
 {% endblock %}

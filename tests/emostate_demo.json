@@ -23,10 +23,10 @@
       "title": "Loneliness",
       "weight": 1.0,
       "questions": [
-        {"id": "lon_1", "text": "How often do you feel part of a group of friends?", "reverse": false, "scale_type": "frequency"},
-        {"id": "lon_2", "text": "How often do you feel that there are people who really understand you?", "reverse": false, "scale_type": "frequency"},
-        {"id": "lon_3", "text": "How often do you feel that no one really knows you well?", "reverse": true, "scale_type": "frequency"},
-        {"id": "lon_4", "text": "How often do you feel that people are around you but not with you?", "reverse": true, "scale_type": "frequency"}
+        {"id": "lon_1", "text": "How often do you feel part of a group of friends?", "reverse": true, "scale_type": "frequency"},
+        {"id": "lon_2", "text": "How often do you feel that there are people who really understand you?", "reverse": true, "scale_type": "frequency"},
+        {"id": "lon_3", "text": "How often do you feel that no one really knows you well?", "reverse": false, "scale_type": "frequency"},
+        {"id": "lon_4", "text": "How often do you feel that people are around you but not with you?", "reverse": false, "scale_type": "frequency"}
       ]
     },
     {
@@ -56,10 +56,10 @@
       "title": "Social Connectedness",
       "weight": 1.0,
       "questions": [
-        {"id": "soc_1", "text": "I feel like an outsider.", "reverse": true, "scale_type": "agreement"},
-        {"id": "soc_2", "text": "I am able to relate to my peers.", "reverse": false, "scale_type": "agreement"},
-        {"id": "soc_3", "text": "I catch myself losing a sense of connectedness with my society.", "reverse": true, "scale_type": "agreement"},
-        {"id": "soc_4", "text": "I am in tune with the world.", "reverse": false, "scale_type": "agreement"}
+        {"id": "soc_1", "text": "I feel like an outsider.", "reverse": false, "scale_type": "agreement"},
+        {"id": "soc_2", "text": "I am able to relate to my peers.", "reverse": true, "scale_type": "agreement"},
+        {"id": "soc_3", "text": "I catch myself losing a sense of connectedness with my society.", "reverse": false, "scale_type": "agreement"},
+        {"id": "soc_4", "text": "I am in tune with the world.", "reverse": true, "scale_type": "agreement"}
       ]
     },
     {

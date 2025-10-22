@@ -1,6 +1,8 @@
 from neo4j import GraphDatabase
 from typing import Dict, List, Tuple
 import json
+from uuid import uuid4
+import datetime
 
 
 class TestScoreCalculator:
@@ -325,3 +327,55 @@ class RecommendationEngine:
                 'severity_distribution': severity_counts,
                 'requires_attention': any(s['severity'] >= 2 for s in states_info)
             }
+    def rate_resource(self, test_id, resource_id, rating):
+        """
+        Користувач оцінює ресурс після тесту.
+        Оцінка впливає на вагу зв’язку між Resource і EmotionalState.
+        """
+        with self.driver.session() as session:
+            session.run("""
+            MATCH (t:TestResult {id: $test_id})-[:DETECTED]->(s:EmotionalState),
+                (r:Resource {id: $resource_id})
+            MERGE (t)-[rel:RATED]->(r)
+            SET rel.rating = $rating, rel.rated_at = datetime()
+            
+            // Тепер оновлюємо вагу між станом і ресурсом
+            MERGE (s)-[rec:RECOMMENDS]->(r)
+            SET rec.weight = coalesce(rec.weight, 1.0) + ($rating - 3) * 0.1
+            RETURN s, r, rec.weight AS new_weight
+            """, test_id=test_id, resource_id=resource_id, rating=rating)
+    
+    def save_test_result(self, emotional_states, recommendations, answers=None, category_scores=None):
+        """
+        Зберігає результати проходження тесту в Neo4j (анонімно).
+        """
+        test_id = str(uuid4())
+        timestamp = datetime.datetime.utcnow().isoformat()
+        
+        with self.driver.session() as session:
+            session.run("""
+            CREATE (t:TestResult {
+                id: $test_id,
+                created_at: datetime($timestamp),
+                raw_answers: $answers_json,
+                category_scores: $scores_json
+            })
+            WITH t
+            UNWIND $state_ids as sid
+            MATCH (s:EmotionalState {id: sid})
+            CREATE (t)-[:DETECTED]->(s)
+            WITH t
+            UNWIND $rec_ids as rid
+            MATCH (r:Resource {id: rid})
+            CREATE (t)-[:RECOMMENDED]->(r)
+            RETURN t
+            """, 
+            test_id=test_id,
+            timestamp=timestamp,
+            answers_json=json.dumps(answers or {}),
+            scores_json=json.dumps(category_scores or {}),
+            state_ids=[s["id"] for s in emotional_states],
+            rec_ids=[r["id"] for r in recommendations]
+            )
+            
+        return test_id
