@@ -1,0 +1,33 @@
+{%extends "base.html"%}
+
+{%block title %}Sign in {%endblock%}
+
+{%block content%}
+<main class="main_signup">
+    <div class="sign_block">
+        <form class="signup_form" method="post">
+            <label>Login</label>
+            <input type="text" name="login">
+
+            <label>Country</label>
+            <datalist id="countries">
+                {% for option in countries %}
+                <option>{{ option }}</option>
+                {%endfor%}
+            </datalist>
+            <input type="text" list="countries" name="country">
+
+            <label>Date of birth</label>
+            <input type="date" name="date_of_birth">
+
+            <label>Password</label>
+            <input type="password" name="password">
+
+            <label>Reenter password</label>
+            <input type="password" name="repassword">
+
+            <input type="submit" class="btn btn-submit">
+        </form>
+    </div>
+</main>
+{%endblock%}

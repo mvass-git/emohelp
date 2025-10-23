@@ -4,6 +4,7 @@ import os
 import json
 
 from neo4j import GraphDatabase
+from db_manager.db import *
 
 bp = Blueprint("test", __name__)
 
@@ -20,6 +21,7 @@ recommender = test_handler.RecommendationEngine(neo4j_uri, neo4j_user, neo4j_pas
 
 app = Flask(__name__)
 app.secret_key = os.urandom(24)
+app.teardown_appcontext(close_db)
 
 @app.route('/')
 def index():
@@ -173,6 +175,17 @@ def about():
 @app.route('/signin')
 def signin():
     return render_template('sign_in.html')
+
+@app.route('/signup', methods=['GET', 'POST'])
+def signup():
+    if request.method == 'POST':
+        login = request.form.get("login")
+        country = request.form.get("country")
+        birthday = request.form.get("date_of_birth")
+        password = request.form.get("password")
+        repassword = request.form.get("repassword")
+
+    return render_template('sign_up.html', countries=[1,2,3,4,10,15])
 
 def find_static_and_templates():
     extra_dirs = ['templates', 'static']

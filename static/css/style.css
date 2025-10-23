@@ -196,10 +196,41 @@ main {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
+.btn {
+    padding: 12px 30px;
+    border: none;
+    border-radius: 8px;
+    font-size: 1.8rem;
+    font-weight: 600;
+    font-family: "Manrope";
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-next,
+.btn-submit {
+    background: #3a405a;
+    color: white;
+    padding: 12px 40px;
+}
+
+.btn-next:hover,
+.btn-submit:hover {
+    background: #2980b9;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
+}
+
+.main_signin, .main_signup{
+    justify-content: center;
+    align-items: center;
+}
+
 .sign_block{
     background-color: rgba(150, 140, 255, 0.1);
     border-radius: 45px;
     padding: 3rem;
+    
 
 }
 
@@ -209,10 +240,26 @@ main {
     align-items: center;
 }
 
-.sign_block form input{
-    height: clamp(25px,1rem,50px);
+.sign_block form input[type="password"],
+.sign_block form input[type="text"] {
+    height: clamp(30px,2rem,60px);
     margin-top: 0.5rem;
     margin-bottom: 0.5rem;
+    width:25vw;
+    max-width: 1000px;
+    border-radius: 8px;
+}
+
+label{
+    font-family: "Manrope";
+}
+
+.sign_block label{
+    font-size: 1.5rem;
+}
+
+.sign_block .btn{
+    margin-top: 1.2rem;
 }
 
 @media (max-width: 768px) {
