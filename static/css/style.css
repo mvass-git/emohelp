@@ -240,6 +240,11 @@ main {
     align-items: center;
 }
 
+.sign_block p {
+    margin-top: 1rem;
+    font-family: "Manrope";
+}
+
 .sign_block form input[type="password"],
 .sign_block form input[type="text"] {
     height: clamp(30px,2rem,60px);

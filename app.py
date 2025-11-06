@@ -2,6 +2,7 @@ from flask import Flask, render_template, Blueprint, request, session, redirect,
 import test_handler
 import os
 import json
+import db_manager.user_manager
 
 from neo4j import GraphDatabase
 from db_manager.db import *
@@ -172,9 +173,16 @@ def rate_resource():
 def about():
     return render_template('about.html')
 
-@app.route('/signin')
+@app.route('/signin', methods = ["GET", "POST"])
 def signin():
-    return render_template('sign_in.html')
+    if request.method == "GET":
+        return render_template('sign_in.html')
+    
+    if request.method == "POST":
+        login = request.form.get("login")
+        password = request.form.get("password")
+
+        db_manager.user_manager.log_in(login, password)
 
 @app.route('/signup', methods=['GET', 'POST'])
 def signup():
@@ -184,6 +192,9 @@ def signup():
         birthday = request.form.get("date_of_birth")
         password = request.form.get("password")
         repassword = request.form.get("repassword")
+        
+        db_manager.user_manager.add_user(login,country,birthday, password, repassword)
+
 
     return render_template('sign_up.html', countries=[1,2,3,4,10,15])
 
