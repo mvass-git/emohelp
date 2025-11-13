@@ -3,6 +3,9 @@ import test_handler
 import os
 import json
 import db_manager.user_manager
+import utils.token_manager
+
+import services.user
 
 from neo4j import GraphDatabase
 from db_manager.db import *
@@ -174,6 +177,7 @@ def about():
     return render_template('about.html')
 
 @app.route('/signin', methods = ["GET", "POST"])
+@services.user.redirect_if_logged_in("index.html")
 def signin():
     if request.method == "GET":
         return render_template('sign_in.html')
@@ -182,9 +186,16 @@ def signin():
         login = request.form.get("login")
         password = request.form.get("password")
 
-        db_manager.user_manager.log_in(login, password)
+        result = services.user.authorize_user(login, password)
+        if result["status"] == "success":
+            return redirect(url_for("index"))
+        else:
+            return render_template("sign_in.html", error="Incorrect login or password")
+
+
 
 @app.route('/signup', methods=['GET', 'POST'])
+@services.user.redirect_if_logged_in("index.html")
 def signup():
     if request.method == 'POST':
         login = request.form.get("login")
@@ -192,11 +203,24 @@ def signup():
         birthday = request.form.get("date_of_birth")
         password = request.form.get("password")
         repassword = request.form.get("repassword")
+
+        create_result = db_manager.user_manager.add_user(login, country, birthday, password, repassword)
         
-        db_manager.user_manager.add_user(login,country,birthday, password, repassword)
+        if create_result.get("status") == "success":
+            auth_result = services.user.authorize_user(login, password)
+            if auth_result["status"] == "success":
+                return redirect(url_for("index"))
 
-
+        return render_template('sign_up.html', countries=[1,2,3,4,10,15],
+                               error="Registration failed or invalid data.")
+    
     return render_template('sign_up.html', countries=[1,2,3,4,10,15])
+
+
+@app.route("/admin", methods=["GET", "POST"])
+@services.user.login_required(["admin"])
+def admin():
+    return render_template("admin_panel/admin.html")
 
 def find_static_and_templates():
     extra_dirs = ['templates', 'static']

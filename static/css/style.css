@@ -259,6 +259,13 @@ label{
     font-family: "Manrope";
 }
 
+.error-msg{
+    color: #c21711;
+    background-color: #35251C;
+    border-radius: 10px;
+    padding: 1rem;
+}
+
 .sign_block label{
     font-size: 1.5rem;
 }
