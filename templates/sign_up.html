@@ -7,7 +7,7 @@
     <div class="sign_block">
         <form class="signup_form" method="post">
             <label>Login</label>
-            <input type="text" name="login">
+            <input type="text" name="login" required>
 
             <label>Country</label>
             <datalist id="countries">
@@ -15,16 +15,31 @@
                 <option>{{ option }}</option>
                 {%endfor%}
             </datalist>
-            <input type="text" list="countries" name="country">
+            <input type="text" list="countries" name="country" required>
 
             <label>Date of birth</label>
-            <input type="date" name="date_of_birth">
+            <input type="date" name="date_of_birth" required>
+            
+            <label>Sex</label>
+
+            <fieldset class="radio-group">
+                <div>
+                    <input type="radio" name="sex" value="man" required>
+                    <label>Man</label>
+                </div>
+
+                <div>
+                    <input type="radio" name="sex" value="woman">
+                    <label>woman</label>
+                </div>
+            </fieldset>
+            
 
             <label>Password</label>
-            <input type="password" name="password">
+            <input type="password" name="password" required>
 
             <label>Reenter password</label>
-            <input type="password" name="repassword">
+            <input type="password" name="repassword" required>
 
             <input type="submit" class="btn btn-submit">
         </form>

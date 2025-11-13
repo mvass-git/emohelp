@@ -255,6 +255,14 @@ main {
     border-radius: 8px;
 }
 
+input[type="date"]{
+    font-family: "Manrope";
+    background-color: #3A405A;
+    border-radius: 10px;
+    color: white;
+    padding: 0.4rem;
+}
+
 label{
     font-family: "Manrope";
 }
@@ -268,10 +276,22 @@ label{
 
 .sign_block label{
     font-size: 1.5rem;
+    padding-top: 0.5rem;
 }
 
 .sign_block .btn{
     margin-top: 1.2rem;
+}
+
+.radio-group{
+    display: inline-flex;
+    border-radius: 10px;
+    border-color:#3a405a;
+    border-width: 5px;
+}
+
+.radio-group div{
+    padding: 0.5rem;
 }
 
 @media (max-width: 768px) {
