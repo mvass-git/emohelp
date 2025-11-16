@@ -6,16 +6,16 @@ import db_manager.user_manager
 import utils.token_manager
 
 import services.user
+import services.ontology
 
-from neo4j import GraphDatabase
+
 from db_manager.db import *
 
 bp = Blueprint("test", __name__)
 
 
 
-neo4j_uri, neo4j_user, neo4j_password = "bolt://localhost:7687", "neo4j", "testpassword"
-driver = GraphDatabase.driver(neo4j_uri, auth=(neo4j_user, neo4j_password))
+
 
 with open("tests/emostate_demo.json", "r", encoding="utf-8") as f:
     test_json = json.load(f)
@@ -221,6 +221,280 @@ def signup():
 @services.user.login_required(["admin"])
 def admin():
     return render_template("admin_panel/admin.html")
+
+@app.route('/api/graph')
+def api_graph():
+    """API endpoint для отримання даних графа"""
+    try:
+        graph_data = services.ontology.get_full_graph()
+        return jsonify(graph_data)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/node/<int:node_id>')
+def api_node_details(node_id):
+    """API endpoint для отримання деталей вузла"""
+    try:
+        with driver.session() as session:
+            result = session.run("""
+                MATCH (n)
+                WHERE id(n) = $node_id
+                OPTIONAL MATCH (n)-[r]-(m)
+                RETURN n, collect({rel: r, node: m}) as connections
+            """, node_id=node_id)
+            
+            record = result.single()
+            if not record:
+                return jsonify({'error': 'Node not found'}), 404
+            
+            node = record['n']
+            connections = []
+            
+            for c in record['connections']:
+                try:
+                    if c['rel']:
+                        connections.append({
+                            'relationship': c['rel'].type,
+                            'node': {
+                                'id': c['node'].id,
+                                'label': c['node'].get('name', c['node'].get('title', 'Unknown')),
+                                'type': list(c['node'].labels)[0] if c['node'].labels else 'Unknown'
+                            }
+                        })
+                except Exception as e:
+                    print(f"⚠️ Error processing connection: {str(e)}")
+            
+            return jsonify({
+                'id': node.id,
+                'labels': list(node.labels),
+                'properties': dict(node),
+                'connections': connections
+            })
+    except Exception as e:
+        return jsonify({'error': f'Database error: {str(e)}'}), 500
+
+
+
+@app.route('/api/schema')
+def api_schema():
+    """API endpoint для отримання схеми онтології"""
+    try:
+        with driver.session() as session:
+            # Отримати всі типи вузлів
+            node_types_result = session.run("""
+                MATCH (n)
+                RETURN DISTINCT labels(n)[0] as type
+                ORDER BY type
+            """)
+            node_types = [record['type'] for record in node_types_result if record['type']]
+            
+            # Отримати всі типи зв'язків
+            edge_types_result = session.run("""
+                MATCH ()-[r]->()
+                RETURN DISTINCT type(r) as type
+                ORDER BY type
+            """)
+            edge_types = [record['type'] for record in edge_types_result]
+            
+            # Отримати властивості для кожного типу вузла
+            node_properties = {}
+            for node_type in node_types:
+                props_result = session.run(f"""
+                    MATCH (n:`{node_type}`)
+                    WITH n LIMIT 1
+                    RETURN keys(n) as properties
+                """)
+                record = props_result.single()
+                if record:
+                    node_properties[node_type] = record['properties']
+            
+            return jsonify({
+                'node_types': node_types,
+                'edge_types': edge_types,
+                'node_properties': node_properties
+            })
+    except Exception as e:
+        return jsonify({'error': f'Database error: {str(e)}'}), 500
+
+
+@app.route('/api/node', methods=['POST'])
+def api_create_node():
+    """API endpoint для створення нового вузла"""
+    try:
+        data = request.get_json()
+        node_type = data.get('type')
+        properties = data.get('properties', {})
+        
+        if not node_type:
+            return jsonify({'error': 'Node type is required'}), 400
+        
+        # Побудувати Cypher запит
+        props_str = ', '.join([f"{k}: ${k}" for k in properties.keys()])
+        query = f"CREATE (n:`{node_type}` {{{props_str}}}) RETURN id(n) as id, n"
+        
+        with driver.session() as session:
+            result = session.run(query, **properties)
+            record = result.single()
+            
+            node = record['n']
+            return jsonify({
+                'success': True,
+                'node': {
+                    'id': record['id'],
+                    'type': node_type,
+                    'properties': dict(node)
+                }
+            })
+    except Exception as e:
+        return jsonify({'error': f'Database error: {str(e)}'}), 500
+
+
+@app.route('/api/edge', methods=['POST'])
+def api_create_edge():
+    """API endpoint для створення нового зв'язку"""
+    try:
+        data = request.get_json()
+        from_id = data.get('from')
+        to_id = data.get('to')
+        edge_type = data.get('type')
+        properties = data.get('properties', {})
+        
+        if not all([from_id, to_id, edge_type]):
+            return jsonify({'error': 'from, to, and type are required'}), 400
+        
+        # Побудувати Cypher запит
+        props_str = ', '.join([f"{k}: ${k}" for k in properties.keys()]) if properties else ''
+        props_part = f" {{{props_str}}}" if props_str else ""
+        
+        query = f"""
+            MATCH (a), (b)
+            WHERE id(a) = $from_id AND id(b) = $to_id
+            CREATE (a)-[r:`{edge_type}`{props_part}]->(b)
+            RETURN id(r) as id, r
+        """
+        
+        with driver.session() as session:
+            result = session.run(query, from_id=from_id, to_id=to_id, **properties)
+            record = result.single()
+            
+            if not record:
+                return jsonify({'error': 'Nodes not found'}), 404
+            
+            rel = record['r']
+            return jsonify({
+                'success': True,
+                'edge': {
+                    'id': record['id'],
+                    'type': edge_type,
+                    'from': from_id,
+                    'to': to_id,
+                    'properties': dict(rel)
+                }
+            })
+    except Exception as e:
+        return jsonify({'error': f'Database error: {str(e)}'}), 500
+
+
+@app.route('/api/edge/<int:edge_id>/properties', methods=['PUT'])
+def api_update_edge_properties(edge_id):
+    """API endpoint для оновлення властивостей зв'язку"""
+    try:
+        data = request.get_json()
+        properties = data.get('properties', {})
+        
+        if not properties:
+            return jsonify({'error': 'Properties are required'}), 400
+        
+        # Побудувати SET clause
+        set_clauses = [f"r.{k} = ${k}" for k in properties.keys()]
+        set_str = ', '.join(set_clauses)
+        
+        query = f"""
+            MATCH ()-[r]->()
+            WHERE id(r) = $edge_id
+            SET {set_str}
+            RETURN r
+        """
+        
+        with driver.session() as session:
+            result = session.run(query, edge_id=edge_id, **properties)
+            record = result.single()
+            
+            if not record:
+                return jsonify({'error': 'Edge not found'}), 404
+            
+            return jsonify({
+                'success': True,
+                'properties': dict(record['r'])
+            })
+    except Exception as e:
+        return jsonify({'error': f'Database error: {str(e)}'}), 500
+
+
+@app.route('/api/edge/<int:edge_id>', methods=['DELETE'])
+def api_delete_edge(edge_id):
+    """API endpoint для видалення зв'язку"""
+    try:
+        with driver.session() as session:
+            result = session.run("""
+                MATCH ()-[r]->()
+                WHERE id(r) = $edge_id
+                DELETE r
+                RETURN count(r) as deleted
+            """, edge_id=edge_id)
+            
+            record = result.single()
+            if record['deleted'] == 0:
+                return jsonify({'error': 'Edge not found'}), 404
+            
+            return jsonify({'success': True, 'message': 'Edge deleted'})
+    except Exception as e:
+        return jsonify({'error': f'Database error: {str(e)}'}), 500
+
+
+@app.route('/api/edge/<int:edge_id>', methods=['PUT'])
+def api_update_edge(edge_id):
+    """API endpoint для оновлення типу зв'язку"""
+    try:
+        data = request.get_json()
+        new_type = data.get('type')
+        
+        if not new_type:
+            return jsonify({'error': 'New type is required'}), 400
+        
+        with driver.session() as session:
+            # Neo4j не дозволяє змінювати тип зв'язку напряму
+            # Потрібно видалити старий і створити новий
+            result = session.run("""
+                MATCH (a)-[r]->(b)
+                WHERE id(r) = $edge_id
+                WITH a, b, properties(r) as props
+                CREATE (a)-[new_r:`""" + new_type + """`]->(b)
+                SET new_r = props
+                RETURN id(new_r) as new_id
+            """, edge_id=edge_id)
+            
+            record = result.single()
+            if not record:
+                return jsonify({'error': 'Edge not found'}), 404
+            
+            # Видалити старий зв'язок
+            session.run("""
+                MATCH ()-[r]->()
+                WHERE id(r) = $edge_id
+                DELETE r
+            """, edge_id=edge_id)
+            
+            return jsonify({
+                'success': True, 
+                'message': 'Edge type updated',
+                'new_id': record['new_id']
+            })
+    except Exception as e:
+        return jsonify({'error': f'Database error: {str(e)}'}), 500
+
+
 
 def find_static_and_templates():
     extra_dirs = ['templates', 'static']

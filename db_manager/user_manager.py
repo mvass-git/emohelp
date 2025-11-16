@@ -63,7 +63,7 @@ def get_user_role(id):
         SELECT role 
         FROM Roles
         INNER JOIN User_roles
-        ON Roles.id = User_roles.user_id
+        ON Roles.id = User_roles.role_id
         WHERE User_roles.user_id = ?
         """,
         (id,)

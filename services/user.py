@@ -23,7 +23,7 @@ def authorize_user(login: str, password: str):
     if role_data.get("status") != "success":
         return {"status": "error", "msg": "Cannot get user role"}
 
-    token = utils.token_manager.create_access_jwt(user[0], role_data["data"]).get("token")
+    token = utils.token_manager.create_access_jwt(user[0], role_data["data"][0]).get("token")
     session["token"] = token
     return {"status": "success", "token": token}
 
@@ -52,6 +52,7 @@ def login_required(role: list[str] | None = None):
 
             # якщо роль передана — перевіряємо
             if role and payload.get("role") not in role:
+                print(payload.get("role"), role)
                 abort(403)  # Forbidden
 
             # зберігаємо payload у g, щоб можна було використовувати в маршруті
