@@ -1,4 +1,4 @@
-from flask import Flask, render_template, Blueprint, request, session, redirect, url_for, flash, jsonify
+from flask import Flask, render_template, Blueprint, request, session, redirect, url_for, flash, jsonify, g
 import test_handler
 import os
 import json
@@ -217,6 +217,8 @@ def signup():
     return render_template('sign_up.html', countries=[1,2,3,4,10,15])
 
 
+# ============= ADMIN PANEL =============
+
 @app.route("/admin", methods=["GET", "POST"])
 @services.user.login_required(["admin"])
 def admin():
@@ -329,9 +331,20 @@ def api_create_node():
         if not node_type:
             return jsonify({'error': 'Node type is required'}), 400
         
+        # Видалити технічні поля
+        properties.pop('id', None)
+        
+        # Згенерувати ID для певних типів
+        if 'id' not in properties and node_type in ['Resource', 'EmotionalState', 'TestCategory', 'Theme', 'ResourceType']:
+            import uuid
+            properties['id'] = f"{node_type.lower()}_{uuid.uuid4().hex[:8]}"
+        
         # Побудувати Cypher запит
-        props_str = ', '.join([f"{k}: ${k}" for k in properties.keys()])
-        query = f"CREATE (n:`{node_type}` {{{props_str}}}) RETURN id(n) as id, n"
+        if properties:
+            props_str = ', '.join([f"{k}: ${k}" for k in properties.keys()])
+            query = f"CREATE (n:`{node_type}` {{{props_str}}}) RETURN id(n) as neo4j_id, n"
+        else:
+            query = f"CREATE (n:`{node_type}`) RETURN id(n) as neo4j_id, n"
         
         with driver.session() as session:
             result = session.run(query, **properties)
@@ -341,7 +354,7 @@ def api_create_node():
             return jsonify({
                 'success': True,
                 'node': {
-                    'id': record['id'],
+                    'id': record['neo4j_id'],
                     'type': node_type,
                     'properties': dict(node)
                 }
@@ -494,6 +507,251 @@ def api_update_edge(edge_id):
     except Exception as e:
         return jsonify({'error': f'Database error: {str(e)}'}), 500
 
+
+# ============= SAVED RESOURCES =============
+
+@app.route('/saved-resources')
+@services.user.login_required()
+def saved_resources_page():
+    """Сторінка збережених ресурсів користувача"""
+    return render_template('saved_resources.html')
+
+
+@app.route('/api/saved-resources')
+@services.user.login_required()
+def api_get_saved_resources():
+    """Отримати всі збережені ресурси користувача з деталями з Neo4j"""
+    try:
+        user_id = g.user['user_id']
+        resource_type = request.args.get('type')
+        
+        # Отримати ID збережених ресурсів з SQLite
+        db, cursor = get_db()
+        cursor.execute(
+            'SELECT resource_id FROM User_saved_resources WHERE user_id = ?',
+            (user_id,)
+        )
+        saved = cursor.fetchall()
+        
+        if not saved:
+            return jsonify({'resources': [], 'total': 0})
+        
+        resource_ids = [row[0] for row in saved]
+        
+        # Отримати деталі ресурсів з Neo4j
+        with driver.session() as neo_session:
+            query = """
+                MATCH (r:Resource)
+                WHERE r.id IN $resource_ids
+                OPTIONAL MATCH (r)-[:BELONGS_TO]->(rt:ResourceType)
+            """
+            
+            if resource_type:
+                query += " WHERE rt.id = $resource_type"
+            
+            query += """
+                RETURN r, rt.name as resource_type, rt.id as resource_type_id
+                ORDER BY r.title
+            """
+            
+            params = {'resource_ids': resource_ids}
+            if resource_type:
+                params['resource_type'] = resource_type
+            
+            result = neo_session.run(query, **params)
+            
+            resources = []
+            for record in result:
+                resource = record['r']
+                resources.append({
+                    'id': resource.get('id'),
+                    'title': resource.get('title'),
+                    'author': resource.get('author'),
+                    'description': resource.get('description'),
+                    'url': resource.get('url'),
+                    'language': resource.get('language'),
+                    'rating': resource.get('rating'),
+                    'duration_minutes': resource.get('duration_minutes'),
+                    'resource_type': record['resource_type'],
+                    'resource_type_id': record['resource_type_id'],
+                    'properties': dict(resource)
+                })
+        
+        return jsonify({
+            'resources': resources,
+            'total': len(resources)
+        })
+        
+    except Exception as e:
+        return jsonify({'error': f'Error: {str(e)}'}), 500
+
+
+@app.route('/api/saved-resources/types')
+@services.user.login_required()
+def api_get_saved_resource_types():
+    """Отримати типи ресурсів, які є у збережених"""
+    try:
+        user_id = g.user['user_id']
+        
+        db, cursor = get_db()
+        cursor.execute(
+            'SELECT resource_id FROM User_saved_resources WHERE user_id = ?',
+            (user_id,)
+        )
+        saved = cursor.fetchall()
+        
+        if not saved:
+            return jsonify({'types': []})
+        
+        resource_ids = [row[0] for row in saved]
+        
+        with driver.session() as neo_session:
+            result = neo_session.run("""
+                MATCH (r:Resource)-[:BELONGS_TO]->(rt:ResourceType)
+                WHERE r.id IN $resource_ids
+                RETURN DISTINCT rt.id as id, rt.name as name, count(r) as count
+                ORDER BY rt.name
+            """, resource_ids=resource_ids)
+            
+            types = [
+                {
+                    'id': record['id'],
+                    'name': record['name'],
+                    'count': record['count']
+                }
+                for record in result
+            ]
+        
+        return jsonify({'types': types})
+        
+    except Exception as e:
+        return jsonify({'error': f'Error: {str(e)}'}), 500
+
+
+@app.route('/api/saved-resources/<resource_id>', methods=['POST'])
+@services.user.login_required()
+def api_save_resource(resource_id):
+    """Зберегти ресурс для користувача"""
+    try:
+        user_id = g.user['user_id']
+        
+        # Перевірити чи існує ресурс в Neo4j
+        with driver.session() as neo_session:
+            result = neo_session.run(
+                "MATCH (r:Resource {id: $resource_id}) RETURN r",
+                resource_id=resource_id
+            )
+            if not result.single():
+                return jsonify({'error': 'Resource not found'}), 404
+        
+        # Зберегти в SQLite
+        db, cursor = get_db()
+        
+        # Перевірити чи вже збережено
+        cursor.execute(
+            'SELECT id FROM User_saved_resources WHERE user_id = ? AND resource_id = ?',
+            (user_id, resource_id)
+        )
+        existing = cursor.fetchone()
+        
+        if existing:
+            return jsonify({'message': 'Already saved', 'already_saved': True})
+        
+        cursor.execute(
+            'INSERT INTO User_saved_resources (user_id, resource_id) VALUES (?, ?)',
+            (user_id, resource_id)
+        )
+        db.commit()
+        
+        return jsonify({'success': True, 'message': 'Resource saved'})
+        
+    except Exception as e:
+        return jsonify({'error': f'Error: {str(e)}'}), 500
+
+
+@app.route('/api/saved-resources/<resource_id>', methods=['DELETE'])
+@services.user.login_required()
+def api_unsave_resource(resource_id):
+    """Видалити ресурс зі збережених"""
+    try:
+        user_id = g.user['user_id']
+        
+        db, cursor = get_db()
+        cursor.execute(
+            'DELETE FROM User_saved_resources WHERE user_id = ? AND resource_id = ?',
+            (user_id, resource_id)
+        )
+        db.commit()
+        
+        if cursor.rowcount == 0:
+            return jsonify({'error': 'Resource not found in saved'}), 404
+        
+        return jsonify({'success': True, 'message': 'Resource removed'})
+        
+    except Exception as e:
+        return jsonify({'error': f'Error: {str(e)}'}), 500
+
+
+@app.route('/api/saved-resources/check/<resource_id>')
+@services.user.login_required()
+def api_check_saved(resource_id):
+    """Перевірити чи збережений ресурс"""
+    try:
+        user_id = g.user['user_id']
+        
+        db, cursor = get_db()
+        cursor.execute(
+            'SELECT id FROM User_saved_resources WHERE user_id = ? AND resource_id = ?',
+            (user_id, resource_id)
+        )
+        saved = cursor.fetchone()
+        
+        return jsonify({'is_saved': saved is not None})
+        
+    except Exception as e:
+        return jsonify({'error': f'Error: {str(e)}'}), 500
+
+
+@app.route('/api/saved-resources/check-batch', methods=['POST'])
+@services.user.login_required()
+def api_check_saved_batch():
+    """Перевірити статус збереження для кількох ресурсів одночасно"""
+    try:
+        user_id = g.user['user_id']
+        data = request.get_json()
+        resource_ids = data.get('resource_ids', [])
+        
+        if not resource_ids:
+            return jsonify({'saved': {}})
+        
+        db, cursor = get_db()
+        placeholders = ','.join('?' * len(resource_ids))
+        query = f'''
+            SELECT resource_id 
+            FROM User_saved_resources 
+            WHERE user_id = ? AND resource_id IN ({placeholders})
+        '''
+        
+        cursor.execute(query, [user_id] + resource_ids)
+        saved = cursor.fetchall()
+        saved_ids = {row[0] for row in saved}
+        
+        # Створити словник результатів
+        result = {rid: (rid in saved_ids) for rid in resource_ids}
+        
+        return jsonify({'saved': result})
+        
+    except Exception as e:
+        return jsonify({'error': f'Error: {str(e)}'}), 500
+
+
+# ============= CONTEXT PROCESSORS =============
+
+@app.context_processor
+def inject_user_info():
+    """Додати інформацію про користувача в контекст шаблонів"""
+    user = getattr(g, 'user', None)
+    return dict(current_user=user)
 
 
 def find_static_and_templates():

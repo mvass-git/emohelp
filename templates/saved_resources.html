@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block title %}Збережені ресурси{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/saved_resources.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="saved-resources-container">
+    <div class="header">
+        <h1>📚 Мої збережені ресурси</h1>
+        <div class="stats" id="stats">
+            <span id="total-count">0</span> ресурсів збережено
+        </div>
+    </div>
+    
+    <div class="filters">
+        <div class="filter-group">
+            <label for="type-filter">Тип ресурсу:</label>
+            <select id="type-filter">
+                <option value="">Всі типи</option>
+            </select>
+        </div>
+        
+        <button id="clear-filter-btn" class="clear-filter-btn">
+            Скинути фільтр
+        </button>
+    </div>
+    
+    <div id="loading" class="loading" style="display: none;">
+        <div class="loading-spinner"></div>
+        <p>Завантаження...</p>
+    </div>
+    
+    <div id="resources-grid" class="resources-grid">
+        <!-- Ресурси будуть завантажені тут -->
+    </div>
+    
+    <div id="empty-state" class="empty-state" style="display: none;">
+        <div class="empty-icon">📭</div>
+        <h3>Немає збережених ресурсів</h3>
+        <p>Збережіть ресурси на сторінці результатів тесту, щоб переглядати їх тут</p>
+        <a href="{{ url_for('test') }}" class="btn-primary">Пройти тест</a>
+    </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/saved_resources.js') }}"></script>
+{% endblock %}
