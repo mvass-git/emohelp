@@ -221,78 +221,8 @@ main {
     box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
 }
 
-.main_signin, .main_signup{
-    justify-content: center;
-    align-items: center;
-}
 
-.sign_block{
-    background-color: rgba(150, 140, 255, 0.1);
-    border-radius: 45px;
-    padding: 3rem;
-    
 
-}
-
-.sign_block form{
-    display: inline-flex;
-    flex-direction: column;
-    align-items: center;
-}
-
-.sign_block p {
-    margin-top: 1rem;
-    font-family: "Manrope";
-}
-
-.sign_block form input[type="password"],
-.sign_block form input[type="text"] {
-    height: clamp(30px,2rem,60px);
-    margin-top: 0.5rem;
-    margin-bottom: 0.5rem;
-    width:25vw;
-    max-width: 1000px;
-    border-radius: 8px;
-}
-
-input[type="date"]{
-    font-family: "Manrope";
-    background-color: #3A405A;
-    border-radius: 10px;
-    color: white;
-    padding: 0.4rem;
-}
-
-label{
-    font-family: "Manrope";
-}
-
-.error-msg{
-    color: #c21711;
-    background-color: #35251C;
-    border-radius: 10px;
-    padding: 1rem;
-}
-
-.sign_block label{
-    font-size: 1.5rem;
-    padding-top: 0.5rem;
-}
-
-.sign_block .btn{
-    margin-top: 1.2rem;
-}
-
-.radio-group{
-    display: inline-flex;
-    border-radius: 10px;
-    border-color:#3a405a;
-    border-width: 5px;
-}
-
-.radio-group div{
-    padding: 0.5rem;
-}
 
 @media (max-width: 768px) {
     main {

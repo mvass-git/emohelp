@@ -1,49 +1,359 @@
-{%extends "base.html"%}
+{% extends "base.html" %}
 
-{%block title %}Sign in {%endblock%}
+{% block title %}Sign up{% endblock %}
 
-{%block content%}
+{% block content %}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Palanquin:wght@700&family=Manrope:wght@400;500;600&display=swap" rel="stylesheet">
+
+<style>
+    * {
+        box-sizing: border-box;
+    }
+
+    html, body {
+        margin: 0;
+        padding: 0;
+        height: 100%;
+    }
+
+    body {
+        font-family: 'Manrope', sans-serif;
+        background: #D9D9D9;
+    }
+
+    .main_signup {
+        min-height: calc(100vh - 80px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 40px 20px;
+    }
+
+    .signup_form a{
+        color: white;
+        text-decoration: none;
+    }
+
+    .sign_block {
+        background: #8A93A8;
+        padding: 50px 60px;
+        border-radius: 20px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+        width: 100%;
+        max-width: 1000px;
+    }
+
+    .signup_form h1 {
+        font-family: 'Palanquin', sans-serif;
+        font-weight: 700;
+        font-size: 52px;
+        color: #3A2E2E;
+        margin: 0 0 40px 0;
+        text-align: center;
+        line-height: 1.1;
+    }
+
+    .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 30px;
+        margin-bottom: 20px;
+    }
+
+    .form-row-split {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 15px;
+    }
+
+    .form-group {
+        margin-bottom: 0;
+    }
+
+    .form-group.empty-placeholder {
+        visibility: hidden;
+    }
+
+    .signup_form label:not(.radio-label) {
+        display: block;
+        font-family: 'Manrope', sans-serif;
+        font-weight: 500;
+        font-size: 15px;
+        color: #3A2E2E;
+        margin-bottom: 8px;
+    }
+
+    .signup_form input[type="text"],
+    .signup_form input[type="password"],
+    .signup_form input[type="date"],
+    .signup_form select {
+        width: 100%;
+        padding: 14px 16px;
+        border: none;
+        border-radius: 10px;
+        background: #EEF1E4;
+        font-family: 'Manrope', sans-serif;
+        font-size: 15px;
+        color: #000000;
+        transition: box-shadow 0.2s;
+        appearance: none;
+    }
+
+    .signup_form input[type="text"]:focus,
+    .signup_form input[type="password"]:focus,
+    .signup_form input[type="date"]:focus,
+    .signup_form select:focus {
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(58, 64, 90, 0.4);
+    }
+
+    .signup_form input::placeholder {
+        color: #999;
+        font-weight: 400;
+    }
+
+    /* Select dropdown */
+    .select-wrapper {
+        position: relative;
+    }
+
+    .select-wrapper::after {
+        content: '▼';
+        position: absolute;
+        right: 16px;
+        top: 50%;
+        transform: translateY(-50%);
+        pointer-events: none;
+        color: #666;
+        font-size: 12px;
+    }
+
+    .select-wrapper select {
+        padding-right: 40px;
+        cursor: pointer;
+    }
+
+    /* Date input */
+    input[type="date"] {
+        cursor: pointer;
+    }
+
+    input[type="date"]::-webkit-calendar-picker-indicator {
+        cursor: pointer;
+        opacity: 0.6;
+    }
+
+    /* Password wrapper */
+    .password-wrapper {
+        position: relative;
+    }
+
+    .password-toggle {
+        position: absolute;
+        right: 14px;
+        top: 50%;
+        transform: translateY(-50%);
+        background: none;
+        border: none;
+        cursor: pointer;
+        padding: 4px 8px;
+        color: #666;
+        font-size: 20px;
+        line-height: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .password-toggle:hover {
+        color: #333;
+    }
+
+    /* Radio group */
+    .radio-group {
+        border: none;
+        padding: 0;
+        margin: 0;
+        display: flex;
+        gap: 20px;
+    }
+
+    .radio-group > div {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .radio-group input[type="radio"] {
+        width: 20px;
+        height: 20px;
+        cursor: pointer;
+        accent-color: #3A405A;
+    }
+
+    .radio-group .radio-label {
+        font-family: 'Manrope', sans-serif;
+        font-size: 15px;
+        color: #3A2E2E;
+        cursor: pointer;
+        margin: 0;
+    }
+
+    /* Submit button */
+    .btn-submit {
+        width: 100%;
+        max-width: 300px;
+        display: block;
+        margin: 35px auto 0;
+        padding: 14px;
+        border: none;
+        border-radius: 10px;
+        background: #3A405A;
+        color: white;
+        font-family: 'Manrope', sans-serif;
+        font-weight: 600;
+        font-size: 17px;
+        cursor: pointer;
+        transition: background 0.2s, transform 0.1s;
+    }
+
+    .btn-submit:hover {
+        background: #2d3247;
+    }
+
+    .btn-submit:active {
+        transform: scale(0.98);
+    }
+
+    /* Bottom text */
+    .signup_form > p {
+        text-align: center;
+        margin-top: 20px;
+        margin-bottom: 0;
+        font-family: 'Manrope', sans-serif;
+        font-size: 14px;
+        color: #3A2E2E;
+        font-weight: 400;
+    }
+
+    .signup_form > p{
+        color: #3A405A;
+        text-decoration: none;
+        font-weight: 600;
+    }
+
+    .signup_form > p a:hover {
+        text-decoration: underline;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .form-row {
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+
+        .sign_block {
+            padding: 40px 30px;
+        }
+
+        .signup_form h1 {
+            font-size: 38px;
+        }
+    }
+</style>
+
 <main class="main_signup">
     <div class="sign_block">
         <form class="signup_form" method="post">
-            <label>Login</label>
-            <input type="text" name="login" required>
+            <h1>Registration</h1>
 
-            <label>Country</label>
-            <datalist id="countries">
-                {% for option in countries %}
-                <option>{{ option }}</option>
-                {%endfor%}
-            </datalist>
-            <input type="text" list="countries" name="country" required>
-
-            <label>Date of birth</label>
-            <input type="date" name="date_of_birth" required>
-            
-            <label>Sex</label>
-
-            <fieldset class="radio-group">
-                <div>
-                    <input type="radio" name="sex" value="man" required>
-                    <label>Man</label>
+            <!-- Ряд 1: Name Surname | Your email -->
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="login">Name Surname</label>
+                    <input type="text" id="login" name="login" placeholder="Name Surname" required>
                 </div>
 
-                <div>
-                    <input type="radio" name="sex" value="woman">
-                    <label>woman</label>
+                <div class="form-group">
+                    <label for="email">Your email</label>
+                    <input type="text" id="email" name="email" placeholder="Email" required>
                 </div>
-            </fieldset>
-            
+            </div>
 
-            <label>Password</label>
-            <input type="password" name="password" required>
+            <!-- Ряд 2: (Your sex + Date of birth) | Your password -->
+            <div class="form-row">
+                <div class="form-row-split">
+                    <div class="form-group">
+                        <label for="sex">Your sex</label>
+                        <div class="select-wrapper">
+                            <select id="sex" name="sex" required>
+                                <option value="" disabled selected>Choose your sex</option>
+                                <option value="man">Man</option>
+                                <option value="woman">Woman</option>
+                            </select>
+                        </div>
+                    </div>
 
-            <label>Reenter password</label>
-            <input type="password" name="repassword" required>
+                    <div class="form-group">
+                        <label for="date_of_birth">Date of birth</label>
+                        <input type="date" id="date_of_birth" name="date_of_birth" placeholder="DD/MM/YYYY" required>
+                    </div>
+                </div>
 
-            <input type="submit" class="btn btn-submit">
+                <div class="form-group">
+                    <label for="password">Your password</label>
+                    <div class="password-wrapper">
+                        <input type="password" id="password" name="password" placeholder="Password" required>
+                        <button type="button" class="password-toggle" onclick="togglePassword('password')" aria-label="Show password">👁</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Ряд 3: Where are you from | Repeat your password -->
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="country">Where are you from</label>
+                    <div class="select-wrapper">
+                        <select id="country" name="country" required>
+                            <option value="" disabled selected>Choose your country</option>
+                            {% for option in countries %}
+                            <option value="{{ option }}">{{ option }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="repassword">Repeat your password</label>
+                    <div class="password-wrapper">
+                        <input type="password" id="repassword" name="repassword" placeholder="Password" required>
+                        <button type="button" class="password-toggle" onclick="togglePassword('repassword')" aria-label="Show password">👁</button>
+                    </div>
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-submit">Sign up</button>
+
+            <p>Already have an account? <a href="{{ url_for('signin') }}">Log in</a></p>
         </form>
-        
     </div>
 </main>
-{%endblock%}
+
+<script>
+function togglePassword(inputId) {
+    const passwordInput = document.getElementById(inputId);
+    const toggleBtn = passwordInput.nextElementSibling;
+    
+    if (passwordInput.type === 'password') {
+        passwordInput.type = 'text';
+        toggleBtn.textContent = '🙈';
+    } else {
+        passwordInput.type = 'password';
+        toggleBtn.textContent = '👁';
+    }
+}
+</script>
+{% endblock %}

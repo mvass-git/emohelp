@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+
+{%block content%}
+<main>
+    <h1 class="t">About Us</h1>
+    <h1 class="s">What is Emohelp?</h1>
+    <p>
+        Emohelp is a free website with a database of categorized materials and resources related to common critical conditions and issues.<br><br>
+Here you can find support for what concerns or interests you, receiving recommendations in the form of links to articles, apps, movies, books, and even music.<br><br>
+Our goal is to create a space where you can feel more comfortable with your problems and learn more about them through the collected materials.<br><br>
+To determine your current most pressing condition, the site offers a short test.<br><br>
+You can also browse the catalog and choose what interests you without taking the test.<br><br>
+You can take the test multiple times.
+    </p>
+
+    <h1 class="s">Is it a professional mental help website?</h1>
+    <p>
+        Emohelp does not provide professional psychological assistance; it is only a resource for identifying your problematic states and providing materials from pop culture.<br><br>
+The test result is not a diagnosis.<br><br>
+For professional help, please consult a specialist.
+    </p>
+
+    <h1 class="s">About the test</h1>
+    <p>
+        The test consists of 20 questions.<br><br>
+It is based on official questionnaires in the categories of Loneliness, Existential, Depressive, Social Connectedness, Motivation.<br><br>
+Do not interpret the test results as a diagnosis.<br><br>
+The test can be taken as many times as desired.<br><br>
+You may also choose not to take it at all.
+    </p>
+
+    <h1 class="s">Contacts</h1>
+    <p>
+        Phones<br><br>
++380 96 338 71 88<br><br>
++380 67 773 55 88<br><br>
++380 96 636 29 54<br><br>
+Emails<br><br>
+k.samsonenko@ukma.edu.ua<br><br>
+* k.homeniuk@ukma.edu.ua<br><br>
+* m.@ukma.edu.ua
+    </p>
+</main>
+
+<style>
+    main {
+        display: inline-flex;
+        flex-direction: column;
+        width: clamp(800px,30vw,40vw);
+        margin-left: 30vw;
+        
+    }
+
+    .t{
+        align-self: center;
+        font-family:'Palanquin';
+        font-size: 2rem;
+    }
+
+.s{
+    font-family: 'Manrope';
+    font-weight: normal;
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+}
+
+p {
+    font-family: 'Manrope';
+    font-size: 1.2rem;
+}
+
+</style>
+{%endblock%}
