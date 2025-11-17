@@ -1,0 +1,151 @@
+{% extends "base.html" %}
+
+{% block content%}
+
+<div class="container">
+        <div class="profile-container">
+            <div class="profile-header">
+                <h1>Your profile</h1>
+            </div>
+            
+           <div class="profile-card">
+            <div class="profile-field">
+                <div class="field-label">Name Surname</div>
+                <div class="field-value">{{ name }}</div>
+            </div>
+            
+            <div class="profile-field">
+                <div class="field-label">Birth date</div>
+                <div class="field-value">{{ birth_date }}</div>
+            </div>
+            
+            <div class="profile-field">
+                <div class="field-label">Sex</div>
+                <div class="field-value">{{ sex }}</div>
+            </div>
+            
+            <div class="profile-field">
+                <div class="field-label">Country</div>
+                <div class="field-value">{{ country }}</div>
+            </div>
+            
+            <div class="profile-field">
+                <div class="field-label">Email</div>
+                <div class="field-value">{{ email }}</div>
+            </div>
+        </div>
+
+        {% if error %}
+        <div class="error-message" style="color: red; text-align: center; margin-top: 20px;">
+            {{ error }}
+        </div>
+        {% endif %}
+            
+            <div class="logout-section">
+                <a href="{{ url_for('logout') }}" class="logout-btn">Log out</a>
+            </div>
+        </div>
+    </div>
+
+     <style>
+        .profile-container {
+            max-width: 600px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+        .profile-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .profile-header h1 {
+            font-family: 'Palanquin', sans-serif;
+            font-size: 36px;
+            font-weight: 600;
+            color: #3A405A;
+            margin-bottom: 10px;
+        }
+
+        .profile-card {
+            background: white;
+            border: 2px solid #8A93A8;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+
+        .profile-field {
+            margin-bottom: 25px;
+            padding-bottom: 25px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .profile-field:last-child {
+            margin-bottom: 0;
+            padding-bottom: 0;
+            border-bottom: none;
+        }
+
+        .field-label {
+            font-family: 'Manrope', sans-serif;
+            font-size: 14px;
+            font-weight: 600;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
+
+        .field-value {
+            font-family: 'Manrope', sans-serif;
+            font-size: 18px;
+            font-weight: 500;
+            color: #35251C;
+        }
+
+        .logout-section {
+            text-align: center;
+            margin-top: 40px;
+        }
+
+        .logout-btn {
+            background: #3A405A;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            padding: 14px 35px;
+            font-family: 'Manrope', sans-serif;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .logout-btn:hover {
+            background: #2d3247;
+            transform: translateY(-2px);
+        }
+
+        @media (max-width: 768px) {
+            .profile-container {
+                margin: 20px auto;
+            }
+            
+            .profile-card {
+                padding: 30px 20px;
+            }
+            
+            .profile-header h1 {
+                font-size: 28px;
+            }
+            
+            .field-value {
+                font-size: 16px;
+            }
+        }
+    </style>
+
+{%endblock%}

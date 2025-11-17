@@ -62,7 +62,7 @@ header {
 }
 
 nav {
-    padding-right: 25vw;
+    padding-right: 20vw;
 }
 
 nav a {
@@ -73,7 +73,6 @@ nav a {
     transition: opacity 0.2s ease, transform 0.2s ease;
     padding: clamp(0.5rem, 1vw, 1rem) clamp(0.8rem, 1.5vw, 2rem);
     font-family: "Manrope";
-
 }
 
 nav a:hover {
@@ -81,6 +80,13 @@ nav a:hover {
     transform: translateY(-2px);
 }
 
+.header-icons {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
+
+.bookmark-icon,
 .user-icon {
     width: clamp(28px, 2vw + 10px, 40px);
     height: clamp(28px, 2vw + 10px, 40px);
@@ -91,18 +97,20 @@ nav a:hover {
     justify-content: center;
     cursor: pointer;
     transition: transform 0.2s ease;
+    text-decoration: none;
 }
 
+.bookmark-icon:hover,
 .user-icon:hover {
     transform: scale(1.05);
 }
 
+.bookmark-icon svg,
 .user-icon svg {
     width: 60%;
     height: 60%;
     fill: white;
 }
-
 
 .container {
     padding: 0 2.5rem;

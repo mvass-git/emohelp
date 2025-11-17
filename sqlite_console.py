@@ -32,6 +32,17 @@ user_id INTEGER,
 resource_id TEXT,
 
 FOREIGN KEY (user_id) REFERENCES User_login_data(id)
+);
+
+CREATE TABLE IF NOT EXISTS User_data(
+id INTEGER PRIMARY KEY AUTOINCREMENT,
+user_id INTEGER,
+name TEXT NOT NULL,
+sex TEXT NOT NULL,
+date_of_birth TEXT NOT NULL,
+country TEXT,
+
+FOREIGN KEY (user_id) REFERENCES User_login_data(id)
 )
 """
 

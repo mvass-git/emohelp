@@ -1,4 +1,4 @@
-from flask import Flask, render_template, Blueprint, request, session, redirect, url_for, flash, jsonify, g
+from flask import Flask, render_template, Blueprint, request, session, redirect, url_for, flash, jsonify, g, config
 import test_handler
 import os
 import json
@@ -14,9 +14,6 @@ from db_manager.db import *
 bp = Blueprint("test", __name__)
 
 
-
-
-
 with open("tests/emostate_demo.json", "r", encoding="utf-8") as f:
     test_json = json.load(f)
 
@@ -27,9 +24,87 @@ app = Flask(__name__)
 app.secret_key = os.urandom(24)
 app.teardown_appcontext(close_db)
 
+countries = [
+    "Afghanistan", "Albania", "Algeria", "Andorra", "Angola", "Antigua and Barbuda", 
+    "Argentina", "Armenia", "Australia", "Austria", "Azerbaijan", "Bahamas", 
+    "Bahrain", "Bangladesh", "Barbados", "Belarus", "Belgium", "Belize", 
+    "Benin", "Bhutan", "Bolivia", "Bosnia and Herzegovina", "Botswana", "Brazil", 
+    "Brunei", "Bulgaria", "Burkina Faso", "Burundi", "Cabo Verde", "Cambodia", 
+    "Cameroon", "Canada", "Central African Republic", "Chad", "Chile", "China", 
+    "Colombia", "Comoros", "Congo", "Costa Rica", "Croatia", "Cuba", "Cyprus", 
+    "Czech Republic", "Denmark", "Djibouti", "Dominica", "Dominican Republic", 
+    "Ecuador", "Egypt", "El Salvador", "Equatorial Guinea", "Eritrea", "Estonia", 
+    "Eswatini", "Ethiopia", "Fiji", "Finland", "France", "Gabon", "Gambia", 
+    "Georgia", "Germany", "Ghana", "Greece", "Grenada", "Guatemala", "Guinea", 
+    "Guinea-Bissau", "Guyana", "Haiti", "Honduras", "Hungary", "Iceland", 
+    "India", "Indonesia", "Iran", "Iraq", "Ireland", "Israel", "Italy", 
+    "Jamaica", "Japan", "Jordan", "Kazakhstan", "Kenya", "Kiribati", "Korea, North", 
+    "Korea, South", "Kosovo", "Kuwait", "Kyrgyzstan", "Laos", "Latvia", "Lebanon", 
+    "Lesotho", "Liberia", "Libya", "Liechtenstein", "Lithuania", "Luxembourg", 
+    "Madagascar", "Malawi", "Malaysia", "Maldives", "Mali", "Malta", 
+    "Marshall Islands", "Mauritania", "Mauritius", "Mexico", "Micronesia", 
+    "Moldova", "Monaco", "Mongolia", "Montenegro", "Morocco", "Mozambique", 
+    "Myanmar", "Namibia", "Nauru", "Nepal", "Netherlands", "New Zealand", 
+    "Nicaragua", "Niger", "Nigeria", "North Macedonia", "Norway", "Oman", 
+    "Pakistan", "Palau", "Palestine", "Panama", "Papua New Guinea", "Paraguay", 
+    "Peru", "Philippines", "Poland", "Portugal", "Qatar", "Romania", "Russia", 
+    "Rwanda", "Saint Kitts and Nevis", "Saint Lucia", "Saint Vincent and the Grenadines", 
+    "Samoa", "San Marino", "Sao Tome and Principe", "Saudi Arabia", "Senegal", 
+    "Serbia", "Seychelles", "Sierra Leone", "Singapore", "Slovakia", "Slovenia", 
+    "Solomon Islands", "Somalia", "South Africa", "South Sudan", "Spain", 
+    "Sri Lanka", "Sudan", "Suriname", "Sweden", "Switzerland", "Syria", 
+    "Taiwan", "Tajikistan", "Tanzania", "Thailand", "Timor-Leste", "Togo", 
+    "Tonga", "Trinidad and Tobago", "Tunisia", "Turkey", "Turkmenistan", 
+    "Tuvalu", "Uganda", "Ukraine", "United Arab Emirates", "United Kingdom", 
+    "United States", "Uruguay", "Uzbekistan", "Vanuatu", "Vatican City", 
+    "Venezuela", "Vietnam", "Yemen", "Zambia", "Zimbabwe"
+]
+
 @app.route('/')
 def index():
     return render_template('index.html')
+
+
+@app.route('/profile')
+@services.user.login_required()
+def profile():
+    # Отримуємо ID поточного користувача з g.user
+    user_id = g.user.get('id')
+    
+    if not user_id:
+        return redirect(url_for('signin'))
+    
+    conn, cur = get_db()
+    
+    try:
+        # Отримуємо дані користувача з таблиць User_login_data та User_data
+        cur.execute("""
+            SELECT ul.login, ud.name, ud.sex, ud.date_of_birth, ud.country 
+            FROM User_login_data ul 
+            LEFT JOIN User_data ud ON ul.id = ud.user_id 
+            WHERE ul.id = ?
+        """, (user_id,))
+        
+        user_data = cur.fetchone()
+        
+        if not user_data:
+            return render_template('profile.html', error="User data not found")
+        
+        # Форматуємо дані для шаблону
+        profile_data = {
+            'email': user_data[0],  # login = email
+            'name': user_data[1] or 'Not specified',
+            'sex': user_data[2] or 'Not specified',
+            'birth_date': user_data[3] or 'Not specified',
+            'country': user_data[4] or 'Not specified'
+        }
+        
+        return render_template('profile.html', **profile_data)
+        
+    except Exception as e:
+        print(f"Error fetching user profile: {e}")
+        return render_template('profile.html', error="Error loading profile data")
+
 
 def get_all_questions(test_data):
     """Extract all questions in order from test JSON"""
@@ -176,6 +251,12 @@ def rate_resource():
 def about():
     return render_template('about.html')
 
+@app.route('/logout')
+@services.user.login_required()
+def logout():
+    session.pop("token", None)
+    return redirect(url_for("signin"))
+
 @app.route('/signin', methods = ["GET", "POST"])
 @services.user.redirect_if_logged_in("index.html")
 def signin():
@@ -198,23 +279,30 @@ def signin():
 @services.user.redirect_if_logged_in("index.html")
 def signup():
     if request.method == 'POST':
-        login = request.form.get("login")
+        login = request.form.get("email")
+        name = request.form.get("name")  # Додано отримання імені
         country = request.form.get("country")
         birthday = request.form.get("date_of_birth")
+        sex = request.form.get("sex")
         password = request.form.get("password")
         repassword = request.form.get("repassword")
 
-        create_result = db_manager.user_manager.add_user(login, country, birthday, password, repassword)
+        # Перевірка наявності обов'язкових полів
+        if not name:
+            return render_template('sign_up.html', countries=countries,
+                               error="Name is required.")
+        
+        create_result = db_manager.user_manager.add_user(login, name, sex, birthday, country, password, repassword)
         
         if create_result.get("status") == "success":
             auth_result = services.user.authorize_user(login, password)
             if auth_result["status"] == "success":
                 return redirect(url_for("index"))
 
-        return render_template('sign_up.html', countries=[1,2,3,4,10,15],
-                               error="Registration failed or invalid data.")
+        return render_template('sign_up.html', countries=countries,
+                               error=create_result.get("msg", "Registration failed or invalid data."))
     
-    return render_template('sign_up.html', countries=[1,2,3,4,10,15])
+    return render_template('sign_up.html', countries=countries)
 
 
 # ============= ADMIN PANEL =============
@@ -522,7 +610,7 @@ def saved_resources_page():
 def api_get_saved_resources():
     """Отримати всі збережені ресурси користувача з деталями з Neo4j"""
     try:
-        user_id = g.user['user_id']
+        user_id = g.user['id']
         resource_type = request.args.get('type')
         
         # Отримати ID збережених ресурсів з SQLite
@@ -591,7 +679,7 @@ def api_get_saved_resources():
 def api_get_saved_resource_types():
     """Отримати типи ресурсів, які є у збережених"""
     try:
-        user_id = g.user['user_id']
+        user_id = g.user['id']
         
         db, cursor = get_db()
         cursor.execute(
@@ -627,13 +715,32 @@ def api_get_saved_resource_types():
     except Exception as e:
         return jsonify({'error': f'Error: {str(e)}'}), 500
 
+@app.route('/api/saved-resources/<resource_id>', methods=['DELETE'])
+@services.user.login_required()
+def api_delete_saved_resource(resource_id):
+    """Видалити ресурс зі збережених"""
+    try:
+        user_id = g.user['id']
+        db, cursor = get_db()
+
+        cursor.execute(
+            'DELETE FROM User_saved_resources WHERE user_id = ? AND resource_id = ?',
+            (user_id, resource_id)
+        )
+        db.commit()
+
+        return jsonify({'success': True})
+
+    except Exception as e:
+        return jsonify({'error': f'Error: {str(e)}'}), 500
+
 
 @app.route('/api/saved-resources/<resource_id>', methods=['POST'])
 @services.user.login_required()
 def api_save_resource(resource_id):
     """Зберегти ресурс для користувача"""
     try:
-        user_id = g.user['user_id']
+        user_id = g.user['id']
         
         # Перевірити чи існує ресурс в Neo4j
         with driver.session() as neo_session:
@@ -674,7 +781,7 @@ def api_save_resource(resource_id):
 def api_unsave_resource(resource_id):
     """Видалити ресурс зі збережених"""
     try:
-        user_id = g.user['user_id']
+        user_id = g.user['id']
         
         db, cursor = get_db()
         cursor.execute(
@@ -697,7 +804,7 @@ def api_unsave_resource(resource_id):
 def api_check_saved(resource_id):
     """Перевірити чи збережений ресурс"""
     try:
-        user_id = g.user['user_id']
+        user_id = g.user['id']
         
         db, cursor = get_db()
         cursor.execute(
@@ -717,7 +824,7 @@ def api_check_saved(resource_id):
 def api_check_saved_batch():
     """Перевірити статус збереження для кількох ресурсів одночасно"""
     try:
-        user_id = g.user['user_id']
+        user_id = g.user['id']
         data = request.get_json()
         resource_ids = data.get('resource_ids', [])
         

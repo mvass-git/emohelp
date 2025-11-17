@@ -1,111 +1,259 @@
 {% extends "base.html" %}
 {% block title %}Test Results - Emotional State Screening{% endblock %}
 
+{% block head %}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Palanquin:wght@700&family=Manrope:wght@400;500;600&display=swap" rel="stylesheet">
+{% endblock %}
+
 {% block content %}
-<div class="test-results">
-    <h2>Your Test Results</h2>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Palanquin:wght@700&family=Manrope:wght@400;500;600&display=swap" rel="stylesheet">
+
+<style>
+    * {
+        box-sizing: border-box;
+    }
+
+    body {
+        font-family: 'Manrope', sans-serif;
+        background: #FFFFFF;
+        margin: 0;
+        padding: 0;
+        color: #35251C;
+    }
+
+    .test-results {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 60px 40px;
+    }
+
+    /* === Header Section === */
+    .results-header {
+        text-align: center;
+        margin-bottom: 60px;
+    }
+
+    .results-header h1 {
+        font-family: 'Palanquin', sans-serif;
+        font-weight: 700;
+        font-size: 80px;
+        color: #35251C;
+        margin: 0 0 20px 0;
+        line-height: 1.1;
+    }
+
+    .header-description {
+        font-size: 28px;
+        color: #35251C;
+        max-width: 800px;
+        margin: 0 auto 40px;
+        line-height: 1.5;
+    }
+
+    .mascot-image {
+        width: 300px;
+        height: auto;
+        margin: 40px auto;
+        display: block;
+    }
+
+    /* === Disclaimer Box === */
+    .disclaimer-box {
+        background: #FFFFFF;
+        border: 3px solid #3A405A;
+        border-radius: 20px;
+        padding: 40px;
+        margin: 40px auto 80px;
+        max-width: 900px;
+        text-align: center;
+    }
+
+    .disclaimer-box p {
+        font-size: 28px;
+        line-height: 1.6;
+        margin: 15px 0;
+        color: #35251C;
+    }
+
+    .disclaimer-box p:first-child {
+        font-weight: 600;
+    }
+
+    /* === Section Headers === */
+    .section-title {
+        font-family: 'Manrope', sans-serif;
+        font-weight: 600;
+        font-size: 56px;
+        color: #35251C;
+        margin: 60px 0 40px 0;
+    }
+
+    /* === Emotional States Section === */
+    .states-list {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+        margin-bottom: 80px;
+    }
+
+    .state-card {
+        background: #EEF1E4;
+        border-radius: 20px;
+        padding: 35px 40px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    }
+
+    .state-content {
+        flex: 1;
+    }
+
+    .state-card h3 {
+        font-family: 'Manrope', sans-serif;
+        font-weight: 600;
+        font-size: 32px;
+        margin: 0 0 10px 0;
+        color: #35251C;
+    }
+
+    .state-card p {
+        font-size: 28px;
+        margin: 8px 0;
+        line-height: 1.4;
+        color: #35251C;
+    }
+
+    .state-meta {
+        font-size: 24px !important;
+        color: #666;
+        margin-top: 12px !important;
+    }
+
+    .state-badge {
+        background: #3A405A;
+        color: white;
+        padding: 12px 30px;
+        border-radius: 50px;
+        font-size: 28px;
+        font-weight: 600;
+        white-space: nowrap;
+    }
+
+    /* === Resources Section === */
+    .resources-list {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+        margin-bottom: 60px;
+    }
+
     
-    <!-- Overall Summary -->
-    <section class="results-summary">
-        <h3>Summary</h3>
-        <div class="summary-card">
-            <p><strong>Total States Identified:</strong> {{ state_summary.total_count }}</p>
-            <p><strong>Severity Distribution:</strong></p>
-            <ul class="severity-list">
-                {% for severity, count in state_summary.severity_distribution.items() %}
-                    <li>
-                        <span class="severity-badge severity-{{ severity }}">
-                            Level {{ severity }}
-                        </span>
-                        : {{ count }} state(s)
-                    </li>
-                {% endfor %}
-            </ul>
-            {% if state_summary.requires_attention %}
-                <div class="alert alert-info">
-                    <strong>Note:</strong> Some areas may benefit from additional support and resources.
-                </div>
-            {% endif %}
+
+    /* === No Results === */
+    .no-recommendations {
+        background: #EEF1E4;
+        border-radius: 20px;
+        padding: 60px;
+        text-align: center;
+    }
+
+    .no-recommendations p {
+        font-size: 28px;
+        color: #35251C;
+        margin: 0;
+    }
+
+    /* === Responsive === */
+    @media (max-width: 768px) {
+        .results-header h1 {
+            font-size: 48px;
+        }
+
+        .section-title {
+            font-size: 36px;
+        }
+
+        .header-description,
+        .disclaimer-box p,
+        .state-card p,
+        .resource-description {
+            font-size: 18px;
+        }
+
+        .state-card h3,
+        .resource-card h3 {
+            font-size: 22px;
+        }
+
+        .state-badge,
+        .resource-type-badge,
+        .tag {
+            font-size: 16px;
+        }
+
+        .state-card {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 20px;
+        }
+
+        .mascot-image {
+            width: 200px;
+        }
+    }
+</style>
+
+<link rel="stylesheet" href="{{ url_for('static', filename='css/resource_cards.css') }}">
+
+<div class="test-results">
+    <!-- Header Section -->
+    <section class="results-header">
+        <h1>Here's our recommendations</h1>
+        <p class="header-description">
+            Based on your responses, we've selected articles, videos, and resources that may help you better understand what you're experiencing and support your wellbeing.
+        </p>
+        
+        <img src="{{ url_for('static', filename='images/Present-1.png') }}" alt="Mascot" class="mascot-image">
+        
+        <div class="disclaimer-box">
+            <p>Remember: this is not a diagnosis.</p>
+            <p>Think of it as a starting point for reflection, learning, and self-care.</p>
+            <p>Take your time exploring the recommendations, and reach out for professional help if you feel you need it.</p>
+            <p><strong>You're not alone.</strong></p>
         </div>
     </section>
 
-    <!-- Category Scores -->
-    <section class="category-scores">
-        <h3>Category Scores</h3>
-        <div class="scores-grid">
-            {% for cat_id, score_data in category_scores.items() %}
-                <div class="score-card">
-                    <h4>{{ cat_id|replace('_', ' ')|title }}</h4>
-                    <div class="score-display">
-                        <span class="score-value">{{ score_data.total }}</span>
-                        <span class="score-max">/20</span>
-                    </div>
-                    <div class="score-bar">
-                        <div class="score-fill"></div>
-                    </div>
-                    <p class="score-average">Average: {{ "%.2f"|format(score_data.average) }}/5</p>
-                </div>
-            {% endfor %}
-        </div>
-    </section>
-
-    <!-- Identified Emotional States -->
+    <!-- Emotional States Section -->
+    {% if state_summary and state_summary.states %}
     <section class="emotional-states">
-        <h3>Identified Emotional States</h3>
+        <h2 class="section-title">Identified emotional states</h2>
+        
         <div class="states-list">
             {% for state_info in state_summary.states %}
-                <div class="state-card severity-{{ state_info.severity }}">
-                    <div class="state-header">
-                        <h4>{{ state_info.name }}</h4>
-                        <span class="state-level level-{{ state_info.level }}">
-                            {{ state_info.level|title }}
-                        </span>
+                <div class="state-card">
+                    <div class="state-content">
+                        <h3>{{ state_info.name }}</h3>
+                        <p>{{ state_info.description }}</p>
+                        <p class="state-meta">
+                            Category: {{ state_info.category|replace('_', ' ')|title }} | Score Range: {{ state_info.score_range }}
+                        </p>
                     </div>
-                    <p class="state-description">{{ state_info.description }}</p>
-                    <p class="state-meta">
-                        <small>Category: {{ state_info.category|replace('_', ' ')|title }}</small> |
-                        <small>Score Range: {{ state_info.score_range }}</small>
-                    </p>
-                </div>
-            {% endfor %}
-        </div>
-    </section>
-
-    <!-- Related States -->
-    {% if related_states %}
-    <section class="related-states">
-        <h3>Related Areas to Consider</h3>
-        <p class="section-description">
-            Based on your results, these related emotional states may also be relevant:
-        </p>
-        <div class="related-list">
-            {% for rel_state in related_states %}
-                <div class="related-card">
-                    <h4>{{ rel_state.name }}</h4>
-                    <p>{{ rel_state.description }}</p>
-                    <div class="related-meta">
-                        <span class="correlation">
-                            Correlation: {{ "%.0f"|format(rel_state.correlation * 100) }}%
-                        </span>
-                        <span class="relationship-type">
-                            {{ rel_state.relationship_type|title }}
-                        </span>
-                    </div>
-                    <p class="related-to">
-                        <small>Related to: {{ rel_state.related_to|join(', ') }}</small>
-                    </p>
+                    <div class="state-badge">{{ state_info.level|title }}</div>
                 </div>
             {% endfor %}
         </div>
     </section>
     {% endif %}
 
-    <!-- Recommendations -->
+    <!-- Resources Section -->
     <section class="recommendations">
-        <h3>Recommended Resources</h3>
-        <p class="section-description">
-            Based on your emotional state profile, we recommend the following resources for self-help and well-being:
-        </p>
+        <h2 class="section-title">Recommended resources</h2>
         
         {% if recommendations %}
         <div class="resources-list">
@@ -113,76 +261,68 @@
                 <div class="resource-card">
                     <div class="resource-header">
                         <div class="resource-title-section">
-                            <h4>{{ resource.title }}</h4>
+                            <h3>{{ resource.title }}</h3>
                             {% if resource.author %}
-                                <p class="resource-author">by {{ resource.author }}</p>
+                                <p class="resource-author">by {{ resource.author }}, {{ resource.language|upper }}</p>
                             {% endif %}
                         </div>
-                        <div class="resource-badges">
-                            <span class="resource-type-badge">{{ resource.resource_type }}</span>
-                            {% if resource.rating %}
-                                <span class="rating-badge">
-                                    ⭐ {{ "%.1f"|format(resource.rating) }}
-                                </span>
-                            {% endif %}
-                        </div>
-                    </div>
-                    
-                    <p class="resource-description">{{ resource.description }}</p>
-                    
-                    <div class="resource-meta">
-                        {% if resource.duration_minutes %}
-                            <span class="meta-item">
-                                ⏱️ {{ resource.duration_minutes }} min
-                            </span>
-                        {% endif %}
-                        {% if resource.language %}
-                            <span class="meta-item">
-                                🌐 {{ resource.language|upper }}
-                            </span>
-                        {% endif %}
+                        <div class="resource-type-badge">{{ resource.resource_type }}</div>
                     </div>
                     
                     {% if resource.addressed_states %}
-                    <div class="resource-helps">
-                        <strong>Helps with:</strong>
-                        <div class="helps-tags">
+                    <div class="resource-section">
+                        <div class="resource-section-title">Helps with:</div>
+                        <div class="tags-container">
                             {% for state in resource.addressed_states %}
-                                <span class="help-tag">{{ state }}</span>
+                                <span class="tag">{{ state }}</span>
                             {% endfor %}
                         </div>
                     </div>
                     {% endif %}
                     
                     {% if resource.themes %}
-                    <div class="resource-themes">
-                        <strong>Themes:</strong>
-                        <div class="theme-tags">
+                    <div class="resource-section">
+                        <div class="resource-section-title">Themes:</div>
+                        <div class="tags-container">
                             {% for theme in resource.themes %}
-                                <span class="theme-tag">{{ theme }}</span>
+                                <span class="tag">{{ theme }}</span>
                             {% endfor %}
                         </div>
                     </div>
                     {% endif %}
                     
-                    <div class="resource-relevance">
-                        <div class="relevance-bar">
-                            <div class="relevance-fill">
-                            </div>
-                        </div>
-                        <small class="relevance-text">
-                            Relevance: {{ "%.0f"|format(resource.relevance_score) }} | 
-                            Effectiveness: {{ "%.0f"|format(resource.avg_effectiveness * 100) }}%
-                        </small>
-                    </div>
+                    <p class="resource-description">{{ resource.description }}</p>
+                    
+                    <!-- DEBUG: показати ID ресурсу -->
+                    {% if True %}
+                    <details style="margin: 10px 0; font-size: 14px;">
+                        <summary style="cursor: pointer; color: #999;">🔍 Debug info</summary>
+                        <pre style="background: #f5f5f5; padding: 10px; border-radius: 4px; overflow: auto; font-size: 12px;">{{ resource | tojson(indent=2) }}</pre>
+                    </details>
+                    {% endif %}
                     
                     <div class="resource-actions">
+                        {% if resource.url %}
                         <a href="{{ resource.url }}" 
                            class="btn btn-primary" 
                            target="_blank" 
                            rel="noopener noreferrer">
                             View Resource →
                         </a>
+                        {% endif %}
+                        
+                        {% if session.get('token') %}
+                        {% if resource.id %}
+                        <button class="btn btn-secondary save-resource-btn" 
+                                data-resource-id="{{ resource.id }}"
+                                onclick="toggleSaveResource('{{ resource.id }}')">
+                            <span class="save-icon">💾</span>
+                            <span class="save-text">Зберегти</span>
+                        </button>
+                        {% else %}
+                        <small style="color: red;">⚠️ Resource ID missing</small>
+                        {% endif %}
+                        {% endif %}
                     </div>
                 </div>
             {% endfor %}
@@ -193,184 +333,9 @@
         </div>
         {% endif %}
     </section>
-
-    <!-- Actions -->
-    <section class="result-actions">
-        <a href="{{ url_for('test') }}" class="btn btn-secondary">Take Test Again</a>
-        <button onclick="window.print()" class="btn btn-secondary">Print Results</button>
-    </section>
-
-    <!-- Disclaimer -->
-    <section class="disclaimer">
-        <h4>Important Note</h4>
-        <p>
-            This screening tool is designed for self-awareness and educational purposes only. 
-            It is not a substitute for professional mental health assessment or treatment. 
-            If you're experiencing significant distress or mental health concerns, please 
-            consult with a qualified mental health professional.
-        </p>
-    </section>
 </div>
 
-<style>
-    /* === Test Results Page Styles === */
-.test-results {
-  max-width: 900px;
-  margin: 3rem auto;
-  padding: 2rem;
-  color: #35251C;
-  font-family: 'Inter', sans-serif;
-}
+<!-- Підключити save_resource.js -->
+<script src="{{ url_for('static', filename='js/save_resource.js') }}"></script>
 
-.test-results h2, 
-.test-results h3, 
-.test-results h4 {
-  color: #35251C;
-  font-weight: 700;
-  margin-bottom: 1rem;
-}
-
-.results-summary, 
-.category-scores, 
-.emotional-states, 
-.related-states, 
-.recommendations, 
-.disclaimer {
-  margin-bottom: 3rem;
-}
-
-.summary-card, 
-.score-card, 
-.state-card, 
-.related-card, 
-.resource-card {
-  background: #f9f9fb;
-  border-radius: 1.5rem;
-  box-shadow: 0 4px 12px rgba(58, 64, 90, 0.15);
-  padding: 1.5rem;
-  margin-bottom: 1rem;
-}
-
-.scores-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 1rem;
-}
-
-/* === Score Cards === */
-.score-display {
-  font-size: 1.8rem;
-  font-weight: 700;
-}
-.score-bar {
-  height: 8px;
-  border-radius: 8px;
-  background: #ddd;
-  margin: 0.5rem 0 1rem;
-  overflow: hidden;
-}
-.score-fill {
-  width: calc(var(--score, 0) * 1%);
-  height: 100%;
-  background: #3a405a;
-  transition: width 0.6s ease;
-}
-.score-average {
-  font-size: 0.9rem;
-  color: #555;
-}
-
-/* === Emotional States === */
-.state-card .state-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-.state-level {
-  background: #3a405a;
-  color: white;
-  border-radius: 12px;
-  padding: 0.2rem 0.6rem;
-  font-size: 0.85rem;
-}
-
-/* === Recommendations === */
-.resource-card {
-  display: flex;
-  flex-direction: column;
-  gap: 0.6rem;
-}
-.resource-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-}
-.resource-type-badge {
-  background: #3a405a;
-  color: white;
-  padding: 0.3rem 0.8rem;
-  border-radius: 9999px;
-  font-size: 0.85rem;
-}
-.rating-badge {
-  background: #ffcc00;
-  color: #35251C;
-  padding: 0.3rem 0.8rem;
-  border-radius: 9999px;
-  font-size: 0.85rem;
-}
-.theme-tags, .helps-tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.3rem;
-}
-.theme-tag, .help-tag {
-  background: #3a405a;
-  color: #fff;
-  padding: 0.2rem 0.6rem;
-  border-radius: 8px;
-  font-size: 0.8rem;
-}
-
-/* === Buttons === */
-.btn {
-  background-color: #3a405a;
-  color: #fff;
-  border: none;
-  border-radius: 12px;
-  padding: 0.6rem 1.4rem;
-  cursor: pointer;
-  font-weight: 600;
-  transition: background 0.2s ease;
-}
-.btn:hover {
-  background-color: #2e334a;
-}
-
-/* === Misc === */
-.alert-info {
-  background: #e5e7f2;
-  border-left: 4px solid #3a405a;
-  padding: 1rem;
-  border-radius: 8px;
-  margin-top: 1rem;
-}
-
-.disclaimer {
-  font-size: 0.9rem;
-  background: #f5f5f7;
-  padding: 1.5rem;
-  border-radius: 12px;
-  color: #3a405a;
-}
-
-.score-card, .state-card, .resource-card {
-    animation: fadeInUp 1s ease both;
-}
-@keyframes fadeInUp {
-    from { opacity: 0; transform: translateY(15px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
-</style>
 {% endblock %}

@@ -18,17 +18,25 @@
                 <a href="{{ url_for('index') }}">Home</a>
                 <a href="{{ url_for('test') }}">Test</a>
                 <a href="{{ url_for('about') }}">About us</a>
-                <a href="{{ url_for('signin') }}">Sign in</a>
+                {% if session.get('token') %}
+                    <a href="{{ url_for('logout') }}">Log out</a>
+                {% else %}
+                    <a href="{{ url_for('signin') }}">Sign in</a>
+                {% endif %}
             </nav>
-            <a href = "{{ url_for('saved_resources_page') }}">
-                <div class="user-icon">
-                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
-                </svg>
+            <div class="header-icons">
+                <a href="{{ url_for('saved_resources_page') }}" class="bookmark-icon">
+                    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M17 3H7c-1.1 0-1.99.9-1.99 2L5 21l7-3 7 3V5c0-1.1-.9-2-2-2z"/>
+                    </svg>
+                </a>
+                <a href="{{ url_for('profile') }}" class="user-icon">
+                    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                    </svg>
+                </a>
             </div>
         </div>
-            </a>
-            
     </header>
 
     <!-- Контейнер для унікального вмісту кожної сторінки -->

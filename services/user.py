@@ -27,6 +27,7 @@ def authorize_user(login: str, password: str):
     session["token"] = token
     return {"status": "success", "token": token}
 
+
 def login_required(role: list[str] | None = None):
     """
     Декоратор для перевірки авторизації і опціонально ролі користувача.
